@@ -59,6 +59,7 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 	}	
 	free (pBuffer) ;
 
+	MessageBox(NULL, TEXT("End of File Buffer Thread"), TEXT("End Thread"), MB_OK);
 	return 0;
 }
 /*------------------------------------------------------------------------------------------------------------------
@@ -119,5 +120,6 @@ DWORD WINAPI FileWriterThread(LPVOID threadParams)
 			count=0;
 		}
 	}
+	MessageBox(NULL, TEXT("End of File Writer Thread"), TEXT("End Thread"), MB_OK);
 	return 0;
 }

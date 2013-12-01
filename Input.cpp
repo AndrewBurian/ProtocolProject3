@@ -275,6 +275,7 @@ DWORD WINAPI SerialReadThread(LPVOID threadParams)
 			// I don't even
 			break;
 		case END_OF_PROGRAM:
+			MessageBox(NULL, TEXT("End of Input Read Thread"), TEXT("End Thread"), MB_OK);
 			return 0;
 		}
 	}

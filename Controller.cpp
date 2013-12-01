@@ -55,7 +55,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 
 		if (signaled == WAIT_OBJECT_0) // ENQ received
 		{
-			MessageBox(NULL, TEXT("ENQ received"), TEXT("Message"), MB_OK);
+			//MessageBox(NULL, TEXT("ENQ received"), TEXT("Message"), MB_OK);
 			retVal = RxProc();
 
 			if (retVal == RET_END_PROGRAM)
@@ -67,7 +67,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 		}
 		else if (signaled - WAIT_OBJECT_0 + 1) // Output availble
 		{
-			MessageBox(NULL, TEXT("Output Available"), TEXT("Message"), MB_OK);
+			//MessageBox(NULL, TEXT("Output Available"), TEXT("Message"), MB_OK);
 			retVal = TxProc();
 
 			if (retVal == RET_END_PROGRAM)
@@ -85,7 +85,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 			return 0;
 		}
 	}
-	SendMessage((HWND)params, WM_DESTROY, 0, 0);
+	MessageBox(NULL, TEXT("End of Controller Thread"), TEXT("End Thread"), MB_OK);
 	return 0;
 }
 
@@ -106,13 +106,13 @@ int TxProc()
 		case WAIT_OBJECT_0:		// End of program
 			return RET_END_PROGRAM;
 		case WAIT_OBJECT_0 + 1: // ACK Received
-			MessageBox(NULL, TEXT("SendNext() in TxProc"), TEXT("SendNext()"), MB_OK);
+			//MessageBox(NULL, TEXT("SendNext() in TxProc"), TEXT("SendNext()"), MB_OK);
 			SendNext();
 			break;
 		case WAIT_OBJECT_0 + 2:
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
 		{
-			MessageBox(NULL, TEXT("Resend() in TxProc"), TEXT("Resend()"), MB_OK);
+			//MessageBox(NULL, TEXT("Resend() in TxProc"), TEXT("Resend()"), MB_OK);
 			size_t i;
 			for (i = 0; i < MAX_RETRIES; ++i)
 			{
@@ -157,20 +157,20 @@ int RxProc()
 		case WAIT_OBJECT_0:				// End of program
 			return RET_END_PROGRAM;
 		case WAIT_OBJECT_0 + 1:			// Good data received
-			MessageBox(NULL, TEXT("SendACK() in RxProc"), TEXT("SendACK()"), MB_OK);
+			//MessageBox(NULL, TEXT("SendACK() in RxProc"), TEXT("SendACK()"), MB_OK);
 			SendACK();
 			break;
 		case WAIT_OBJECT_0 + 2:			// Bad data received; do nothing
-			MessageBox(NULL, TEXT("Bad data received in RxProc"), TEXT("Bad data"), MB_OK);
+			//MessageBox(NULL, TEXT("Bad data received in RxProc"), TEXT("Bad data"), MB_OK);
 			break;
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
-			MessageBox(NULL, TEXT("Received EOT in RxProc"), TEXT("Rx EOT"), MB_OK);
+			//MessageBox(NULL, TEXT("Received EOT in RxProc"), TEXT("Rx EOT"), MB_OK);
 			return RX_RET_SUCCESS;
 		case WAIT_TIMEOUT:
-			MessageBox(NULL, TEXT("Data timed out in RxProc"), TEXT("Timeout"), MB_OK);
+			//MessageBox(NULL, TEXT("Data timed out in RxProc"), TEXT("Timeout"), MB_OK);
 			return RX_RET_DATA_TIMEOUT;
 		case WAIT_FAILED:				// Something went wrong; end the program
-			MessageError(TEXT("Waiting for data, EOT or end of program in RxProc failed"));
+			//MessageError(TEXT("Waiting for data, EOT or end of program in RxProc failed"));
 			SetEvent(hEvents[0]);
 			return RET_END_PROGRAM;
 		}
