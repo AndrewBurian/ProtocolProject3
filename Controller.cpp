@@ -29,7 +29,7 @@
 #define TX_RET_NO_ENQ				1
 #define TX_RET_EXCEEDED_RETRIES		2
 // other stuff
-#define MAX_RETRIES	5
+#define MAX_RETRIES	SEND_LIMIT - 1
 
 // RxProc
 // return vales
@@ -113,18 +113,19 @@ int TxProc()
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
 		{
 			//MessageBox(NULL, TEXT("Resend() in TxProc"), TEXT("Resend()"), MB_OK);
+			GUI_Lost();
 			size_t i;
 			for (i = 0; i < MAX_RETRIES; ++i)
 			{
 				Resend();
 				GUI_Sent();
-				GUI_Lost();
 				signaled = WaitForSingleObject(hEvents[1], TIMEOUT); // Wait for an ACK
 				if (signaled == WAIT_OBJECT_0)
 					break;
+				GUI_Lost();
 			}
 			
-			if (i == 5)
+			if (i == MAX_RETRIES)
 				return TX_RET_EXCEEDED_RETRIES;
 			break;
 		}
@@ -165,7 +166,7 @@ int RxProc()
 			break;
 		case WAIT_OBJECT_0 + 2:			// Bad data received; do nothing
 			//MessageBox(NULL, TEXT("Bad data received in RxProc"), TEXT("Bad data"), MB_OK);
-			GUI_Received();
+			GUI_ReceivedBad();
 			break;
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
 			//MessageBox(NULL, TEXT("Received EOT in RxProc"), TEXT("Rx EOT"), MB_OK);
