@@ -29,10 +29,24 @@ VOID SetupGUI(HWND main, HWND edit)
 -- This function is used to write data to the edit box.  It appends new datato the currently existing text.
 --
 ----------------------------------------------------------------------------------------------------------------------*/
-VOID GUI_Text(TCHAR* text)
+VOID GUI_Text(wchar_t * text)
 {
 	//This might be what we have to use.  We'd have to create a buffer to 
 	//hold all text and then append text to buffer and then redisplay it
+	//SetWindowText(hwndTextBox, text);
+	/*
+	//Put window text in string buffer;
+	int len = GetWindowTextLength(hwndTextBox);
+	wchar_t * scrBuffer;
+	wchar_t buffer[10000];
+	GetWindowText(hwndTextBox, scrBuffer, len+1);
+	(scrBuffer, sizeof(text), text);
+	//Concatenate new text to window text
+	*/
+	//put total back on screen
+
+
+
 	SetWindowText(hwndTextBox, text);
 	/*
 int len = GetWindowTextLength(hwndTextBox);
