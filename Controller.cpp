@@ -53,8 +53,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 
 	while (!*bProgramDone)
 	{
-		Sleep(TIMEOUT);		// Give time for the other side to grab the line.
-
 		int retVal;
 
 		if(!output_queue->empty())
@@ -177,6 +175,7 @@ int TxProc()
 
 	// if we've gotten out of the loop, then there's no more data to send
 	SendEOT();
+	Sleep(TIMEOUT);		// Give time for the other side to grab the line.
 	return TX_RET_SUCCESS;
 }
 
