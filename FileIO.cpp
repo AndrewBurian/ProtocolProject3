@@ -6,6 +6,11 @@
 
 HANDLE hOutputReady = CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE);
 
+
+HANDLE hInputEvents[2] = {CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE),
+	CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM)};
+
+
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: FileBufferThread
 --
@@ -37,7 +42,7 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 	PBYTE  pBuffer;
 
 	if (INVALID_HANDLE_VALUE == 
-		(hFile = CreateFile (fileName, GENERIC_READ, FILE_SHARE_READ,
+		(hFile = CreateFile ((LPCWSTR)fileName, GENERIC_READ, FILE_SHARE_READ,
 		NULL, OPEN_EXISTING, 0, NULL)))
 		return FALSE ;
 
@@ -78,9 +83,9 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI FileWriterThread(LPVOID threadParams)
 {
-	char* buffer="This is a test!";
-	//char* buffer[1020];
-
+	char buffer[1023];
+	int count=0;
+	int waits;
 	queue<BYTE> *inQueue=((SHARED_DATA_POINTERS*)threadParams)-> p_quInputQueue;
 	BOOL progDone = *((SHARED_DATA_POINTERS*)threadParams)-> p_bProgramDone;
 	inQueue->push('T');
@@ -99,25 +104,32 @@ DWORD WINAPI FileWriterThread(LPVOID threadParams)
 	inQueue->push('t');
 	while(!(progDone))
 	{
+	waits=	WaitForMultipleObjects(2, hInputEvents, FALSE, INFINITE);
+	if(waits==WAIT_OBJECT_0 + 1){break;}
 		while(!(inQueue->empty()))
 		{
-
-			//strcat_s(buffer,1,(char*)inQueue->front());
-			//sprintf_s(buffer,1, %s%c, (CHAR*)inQueue->front());
-			//if only every other character is printed, remove the pop
-			inQueue->pop();
+			if(count==1022){break;}
+			else{
+				buffer[count]=(inQueue->front());
+				count++;
+				//get the length of the current buffer string, add the characters one at a time 
+				//to the appropriate places then add the terminating null character
+				//sprintf_s(buffer,1, %s%c, (CHAR*)inQueue->front());
+				//if only every other character is printed, remove the pop
+				inQueue->pop();
+			}
 		}
-		if (sizeof(buffer)>1){
-		//convert to wide char string
-		size_t newsize = strlen(buffer) + 1;
-		wchar_t * wcstring = new wchar_t[newsize];
-		size_t convertedChars = 0;
-		mbstowcs_s(&convertedChars, wcstring, newsize, buffer, _TRUNCATE);
-		//send buffer to display function
-
-		GUI_Text(wcstring);
-		buffer="";
-		delete[] wcstring;
+		if (count>0){
+			buffer[count+1]='\0';
+			//convert to wide char string
+			size_t newsize = count + 1;
+			wchar_t * wcstring = new wchar_t[newsize];
+			size_t convertedChars = 0;
+			mbstowcs_s(&convertedChars, wcstring, newsize, buffer, _TRUNCATE);
+			//send buffer to display function
+			GUI_Text(wcstring);
+			buffer[0]='\0';
+			count=0;
 		}
 	}
 	return 0;
