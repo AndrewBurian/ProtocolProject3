@@ -96,7 +96,7 @@ BOOL CheckCRC(byte* input, byte* crc);
 // ----------------------------------------------------------------------------
 
 VOID SetupGUI(HWND main, HWND edit);
-VOID GUI_Text(wchar_t * text);
+VOID GUI_Text(TCHAR* text);
 VOID GUI_Sent();
 VOID GUI_Received();
 VOID GUI_ReceivedBad();
