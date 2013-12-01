@@ -16,6 +16,10 @@ BOOL bConnected = FALSE;
 TCHAR fileName[MAX_PATH];
 TCHAR titleName[MAX_PATH];
 
+DCB dcb;
+COMMPROP comprop;
+COMMTIMEOUTS timeouts;
+
 OPENFILENAME ofn;
 
 COMMCONFIG cc;
@@ -78,20 +82,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 			
 			cc.dwSize = sizeof(COMMCONFIG);
 			cc.wVersion = 0x100;
-			
+			dcb.DCBlength=sizeof(dcb);
 			GetCommConfig(hMasterCommPort, &cc, &cc.dwSize);
+			GetCommProperties(hMasterCommPort, &comprop);
+			GetCommState(hMasterCommPort, &dcb);
 			if (!CommConfigDialog(TEXT("COM1"), hwnd, &cc))
 			{
 				MessageBox(hwnd, TEXT("You did not finish connecting"), TEXT("Alert"), MB_ICONWARNING | MB_OK);
 				break;
 			}
+			SetCommConfig(hMasterCommPort, &cc, cc.dwSize);
 
+				if (!SetupComm(hMasterCommPort, 256, 256))
+	{
+		MessageBox (NULL, TEXT("Error Setting up COM port:"), TEXT(""), MB_OK);
+		return FALSE;
+	}
+			
 			bConnected = TRUE;
 
 			MasterDat.p_hCommPort = &hMasterCommPort;
 			MasterDat.p_bProgramDone = &bMasterProgramDone;
 			MasterDat.p_quInputQueue = &quMasterInputQueue;
 			MasterDat.p_quOutputQueue = &quMasterOutputQueue;
+
+
 
 			SetupOutput(&MasterDat);
 
