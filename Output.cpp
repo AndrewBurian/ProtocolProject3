@@ -53,22 +53,21 @@ HANDLE *hOutputCommPort = NULL;
 ----------------------------------------------------------------------------------------------------------------------*/
 BOOL WriteOut(byte* frame, unsigned len)
 {
-	OVERLAPPED ovrOut;
-	ovrOut.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	DWORD written = 0;
+	OVERLAPPED ovrOut = { 0 };
+	ovrOut.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 	
 	// Start Async write
-	WriteFile(*hOutputCommPort, frame, len, &written, &ovrOut);
+	WriteFile(*hOutputCommPort, frame, len, NULL, &ovrOut);
 	
 	// wait for event imbedded in overlapped struct
 	int result = WaitForSingleObject(ovrOut.hEvent, INFINITE);
+
+	ResetEvent(ovrOut.hEvent);
 	
 	switch (result)
 	{
 		case WAIT_OBJECT_0:
-			if (written == len)
-				return TRUE;
-			return FALSE;
+			return TRUE;
 		case WAIT_TIMEOUT:
 			return FALSE;
 		case WAIT_ABANDONED:
@@ -78,7 +77,6 @@ BOOL WriteOut(byte* frame, unsigned len)
 	// how you would get here is beyond me, but probably failed horribly
 	return FALSE;
 
-	*/
 }
 
 /*------------------------------------------------------------------------------------------------------------------
