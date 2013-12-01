@@ -1,5 +1,6 @@
 #include "BCP.h"
 
+#include <tchar.h>
 int sent = 0, received = 0, lost = 0;
 HWND hwndMainWin = NULL;
 HWND hwndTextBox = NULL;
@@ -49,18 +50,32 @@ VOID GUI_Text(wchar_t * text)
 
 	SetWindowText(hwndTextBox, text);
 	/*
-int len = GetWindowTextLength(hwndTextBox);
-std::vector<TCHAR> temp(len + sizeof(text) + 1);
+	int len = GetWindowTextLength(hwndTextBox);
+	std::vector<TCHAR> temp(len + sizeof(text) + 1);
 
-GetWindowText(hwndTextBox, temp.data(), temp.size());
-wcscat_s(temp.data(),sizeof(text), (const wchar_t*)text);
-SetWindowText(hwndTextBox, temp.data());
+	GetWindowText(hwndTextBox, temp.data(), temp.size());
+	wcscat_s(temp.data(),sizeof(text), (const wchar_t*)text);
+	SetWindowText(hwndTextBox, temp.data());
 	*/
 }
 
 VOID update()
 {
+	HDC hdc=	GetDC(hwndMainWin);
 
+	TCHAR num[3];
+	const TCHAR *fmt = TEXT("%d");
+
+	_sntprintf_s(num, 10, fmt, sent);
+	TextOut(hdc, 550, 350,num,2);
+
+	_sntprintf_s(num, 10, fmt, received);
+	TextOut(hdc, 550, 380, num,2);
+
+	_sntprintf_s(num, 10, fmt, lost);
+	TextOut(hdc, 550, 410, num, 2);
+
+	ReleaseDC(hwndMainWin, hdc);
 }
 
 VOID GUI_Sent()
