@@ -94,11 +94,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 			}
 			SetCommConfig(hMasterCommPort, &cc, cc.dwSize);
 
-				if (!SetupComm(hMasterCommPort, 256, 256))
-	{
-		MessageBox (NULL, TEXT("Error Setting up COM port:"), TEXT(""), MB_OK);
-		return FALSE;
-	}
+			if (!SetupComm(hMasterCommPort, 256, 256))
+			{
+				MessageBox (NULL, TEXT("Error Setting up COM port:"), TEXT(""), MB_OK);
+				return FALSE;
+			}
 			
 			bConnected = TRUE;
 
