@@ -143,7 +143,7 @@ BOOL SendNext()
 		dataFrame[1] = DC1;
 		SOTval = 2;
 	}
-	if (SOTval == 2)
+	else if (SOTval == 2)
 	{
 		dataFrame[1] = DC2;
 		SOTval = 1;
