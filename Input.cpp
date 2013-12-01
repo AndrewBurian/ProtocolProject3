@@ -256,7 +256,7 @@ DWORD WINAPI SerialReadThread(LPVOID threadParams)
 	quInputQueue = dat->p_quInputQueue;
 	hInputCommPort = dat->p_hCommPort;
 
-	while (!bProgramDone)
+	while (!(*bProgramDone))
 	{
 		switch (ReadIn(&input[0], 1, INFINITE))
 		{
