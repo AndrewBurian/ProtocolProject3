@@ -85,7 +85,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 			return 0;
 		}
 	}
-	MessageBox(NULL, TEXT("End of Controller Thread"), TEXT("End Thread"), MB_OK);
 	return 0;
 }
 
@@ -108,6 +107,7 @@ int TxProc()
 		case WAIT_OBJECT_0 + 1: // ACK Received
 			//MessageBox(NULL, TEXT("SendNext() in TxProc"), TEXT("SendNext()"), MB_OK);
 			SendNext();
+			GUI_Sent();
 			break;
 		case WAIT_OBJECT_0 + 2:
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
@@ -117,6 +117,8 @@ int TxProc()
 			for (i = 0; i < MAX_RETRIES; ++i)
 			{
 				Resend();
+				GUI_Sent();
+				GUI_Lost();
 				signaled = WaitForSingleObject(hEvents[1], TIMEOUT); // Wait for an ACK
 				if (signaled == WAIT_OBJECT_0)
 					break;
@@ -158,10 +160,12 @@ int RxProc()
 			return RET_END_PROGRAM;
 		case WAIT_OBJECT_0 + 1:			// Good data received
 			//MessageBox(NULL, TEXT("SendACK() in RxProc"), TEXT("SendACK()"), MB_OK);
+			GUI_Received();
 			SendACK();
 			break;
 		case WAIT_OBJECT_0 + 2:			// Bad data received; do nothing
 			//MessageBox(NULL, TEXT("Bad data received in RxProc"), TEXT("Bad data"), MB_OK);
+			GUI_Received();
 			break;
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
 			//MessageBox(NULL, TEXT("Received EOT in RxProc"), TEXT("Rx EOT"), MB_OK);

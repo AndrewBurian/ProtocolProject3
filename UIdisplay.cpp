@@ -4,11 +4,13 @@
 int sent = 0, received = 0, lost = 0;
 HWND hwndMainWin = NULL;
 HWND hwndTextBox = NULL;
+VOID update();
 
 VOID SetupGUI(HWND main, HWND edit)
 {
 	hwndMainWin = main;
 	hwndTextBox = edit;
+	update();
 }
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: GUI_Text
