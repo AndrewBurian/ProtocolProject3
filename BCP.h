@@ -29,7 +29,7 @@ using namespace std;
 
 // Definitions
 // ----------------------------------------------------------------------------
-#define TIMEOUT 200
+#define TIMEOUT INFINITE
 #define SEND_LIMIT 5
 
 #define ACK 0x06

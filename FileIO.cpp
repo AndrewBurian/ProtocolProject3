@@ -55,8 +55,8 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 	pBuffer[iFileLength + 1] = '\0' ;
 	for (int i=0;i<iFileLength;++i){
 		outQueue->push(pBuffer[i]);
-		SetEvent(hOutputReady);
-	}	
+	}
+	SetEvent(hOutputReady);
 	free (pBuffer) ;
 
 	return 0;
