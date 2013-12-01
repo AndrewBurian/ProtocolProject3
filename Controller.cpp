@@ -46,7 +46,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 	int	   signaled		= -1;
 	HANDLE hEvents[3]	= { CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ),
 							CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE),
-							CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM) };
+							CreateEvent(NULL, TRUE, FALSE, EVENT_END_PROGRAM) };
 	output_queue		= ((SHARED_DATA_POINTERS*)params)->p_quOutputQueue;
 
 	while ((signaled = WaitForMultipleObjects(3, hEvents, FALSE, INFINITE)) != WAIT_OBJECT_0 + 2)
