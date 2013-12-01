@@ -295,6 +295,6 @@ BOOL SendEOT()
 ----------------------------------------------------------------------------------------------------------------------*/
 VOID SetupOutput(SHARED_DATA_POINTERS* dat)
 {
-	quOutputQueue = dat->p_quInputQueue;
+	quOutputQueue = dat->p_quOutputQueue;
 	hOutputCommPort = dat->p_hCommPort;
 }
