@@ -94,10 +94,11 @@ int TxProc()
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK) };
+	size_t send_count = 0;
 
 	SendENQ();
 
-	while (!output_queue->empty())
+	while (!output_queue->empty() && send_count < SEND_LIMIT)
 	{
 		signaled = WaitForMultipleObjects(3, hEvents, FALSE, TIMEOUT); // possible issue: program ends after timeout
 		switch (signaled)
@@ -107,6 +108,7 @@ int TxProc()
 		case WAIT_OBJECT_0 + 1: // ACK Received
 			//MessageBox(NULL, TEXT("SendNext() in TxProc"), TEXT("SendNext()"), MB_OK);
 			SendNext();
+			++send_count;
 			GUI_Sent();
 			break;
 		case WAIT_OBJECT_0 + 2:
@@ -114,19 +116,28 @@ int TxProc()
 		{
 			//MessageBox(NULL, TEXT("Resend() in TxProc"), TEXT("Resend()"), MB_OK);
 			GUI_Lost();
+			--send_count;
 			size_t i;
 			for (i = 0; i < MAX_RETRIES; ++i)
 			{
 				Resend();
 				GUI_Sent();
+				++send_count;
+
 				signaled = WaitForSingleObject(hEvents[1], TIMEOUT); // Wait for an ACK
+
 				if (signaled == WAIT_OBJECT_0)
 					break;
+
 				GUI_Lost();
+				--send_count;
 			}
 			
 			if (i == MAX_RETRIES)
+			{
+				ClearOutputQueue();
 				return TX_RET_EXCEEDED_RETRIES;
+			}
 			break;
 		}
 
