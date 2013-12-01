@@ -13,6 +13,9 @@ HANDLE hInputEvents[2] = {CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE)
 -- DATE: November 19, 2013
 --
 -- REVISIONS: (Date and Description)
+--			Chris Holisky
+--			November 30, 2013
+--			Added event
 --
 -- DESIGNER: Chris Holisky
 --
@@ -64,6 +67,9 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 -- DATE: November 19, 2013
 --
 -- REVISIONS: (Date and Description)
+--			Chris Holisky
+--			November 30, 2013
+--			Rewrote most code to better utilise queue and caonvert to wide chars
 --
 -- DESIGNER: Chris Holisky
 --
