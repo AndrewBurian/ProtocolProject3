@@ -29,7 +29,7 @@ using namespace std;
 
 // Definitions
 // ----------------------------------------------------------------------------
-#define TIMEOUT INFINITE
+#define TIMEOUT 200
 #define SEND_LIMIT 5
 
 #define ACK 0x06
@@ -94,6 +94,7 @@ VOID SetupGUI(HWND main, HWND edit);
 VOID GUI_Text(wchar_t * text);
 VOID GUI_Sent();
 VOID GUI_Received();
+VOID GUI_ReceivedBad();
 VOID GUI_Lost();
 
 // Choose File popup

@@ -1,7 +1,7 @@
 #include "BCP.h"
 
 #include <tchar.h>
-int sent = 0, received = 0, lost = 0;
+int sent = 0, received = 0, badReceived = 0, lost = 0;
 HWND hwndMainWin = NULL;
 HWND hwndTextBox = NULL;
 VOID update();
@@ -71,11 +71,14 @@ VOID update()
 	_sntprintf_s(num, 10, fmt, sent);
 	TextOut(hdc, 550, 350,num,2);
 
-	_sntprintf_s(num, 10, fmt, received);
+	_sntprintf_s(num, 10, fmt, lost);
 	TextOut(hdc, 550, 380, num,2);
 
-	_sntprintf_s(num, 10, fmt, lost);
+	_sntprintf_s(num, 10, fmt, received);
 	TextOut(hdc, 550, 410, num, 2);
+
+	_sntprintf_s(num, 10, fmt, badReceived);
+	TextOut(hdc, 550, 440, num, 2);
 
 	ReleaseDC(hwndMainWin, hdc);
 }
@@ -95,5 +98,11 @@ VOID GUI_Received()
 VOID GUI_Lost()
 {
 	++lost;
+	update();
+}
+
+VOID GUI_ReceivedBad()
+{
+	++badReceived;
 	update();
 }

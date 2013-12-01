@@ -57,8 +57,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 		Rectangle(hdc, 400, 300, 750, 550);	// left, top, right, bottom
 		TextOut(hdc, 410, 310, TEXT("Packet stats"), 12);
 		TextOut(hdc, 410, 350, TEXT("Sent:"), 5);
-		TextOut(hdc, 410, 380, TEXT("Received:"), 9);
-		TextOut(hdc, 410, 410, TEXT("Lost:"), 5);
+		TextOut(hdc, 410, 380, TEXT("Lost:"), 5);
+		TextOut(hdc, 410, 410, TEXT("Received:"), 9);
+		TextOut(hdc, 410, 440, TEXT("Received Corrupt:"), 17);
 		EndPaint(hwnd, NULL);
 		
 		ReleaseDC(hwnd, hdc);
