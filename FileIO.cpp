@@ -4,7 +4,7 @@
 //event declarations
 HANDLE hOutputReady = CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE);
 HANDLE hInputEvents[2] = {CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE),
-	CreateEvent(NULL, FALSE, TRUE, EVENT_END_PROGRAM)};
+	CreateEvent(NULL, TRUE, FALSE, EVENT_END_PROGRAM)};
 
 
 /*------------------------------------------------------------------------------------------------------------------
