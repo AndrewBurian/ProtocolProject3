@@ -71,8 +71,8 @@ VOID SetupOutput(SHARED_DATA_POINTERS* dat);
 VOID ClearOutputQueue();
 
 //CRC
-BOOL MakeCRC(byte* input, byte* crc);
-BOOL CheckCRC(byte* input, byte* crc);
+BOOL MakeCRC(byte* input);
+BOOL CheckCRC(byte* input);
 
 
 // Global events
