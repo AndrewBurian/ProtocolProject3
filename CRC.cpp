@@ -17,6 +17,10 @@
 -- DATE: November 18, 2013
 --
 -- REVISIONS: (Date and Description)
+--				Dec 1, 2013
+--				Chris Holisky
+--				Changed functions to take bytes instead of chars
+--				fixed CRC code not being read correctly
 --
 -- DESIGNER: Chris Holisky
 --
@@ -112,14 +116,17 @@ unsigned short crc16_ccitt(const byte *buf, int len)
 -- DATE: November 18, 2013
 --
 -- REVISIONS: (Date and Description)
+--			Dec 1, 2013
+--			Chris Holisky
+			Changed function to take byte instead of char
 --
 -- DESIGNER: Chris Holisky
 --
 -- PROGRAMMER: Chris Holisky
 --
--- INTERFACE: void crc2char (short input, char* &CRC)
+-- INTERFACE: void crc2char (short input, byte* &CRC)
 --		short input: the number genereated by the CRC generator
---		char* &CRC: the two character array to put the CRC characters into
+--		byte* &CRC: the two byte array to put the CRC characters into
 --
 -- RETURNS: void
 --
@@ -144,13 +151,17 @@ void crc2char (short input, byte* CRC){
 -- DATE: November 18, 2013
 --
 -- REVISIONS: (Date and Description)
+--			Dec 1, 2013
+--			Chris Holisky
+--			Changed function to take byte instead of char
+--			Modified function to read bytes properly
 --
 -- DESIGNER: Chris Holisky
 --
 -- PROGRAMMER: Chris Holisky
 --
--- INTERFACE: int char2crc (char* input)
---		char* input: the CRC characters taken from an incoming code word
+-- INTERFACE: int char2crc (byte* input)
+--		byte* input: the CRC bytes taken from an incoming code word
 --
 -- RETURNS: A number to check against the CRC generator
 --
@@ -175,20 +186,24 @@ int char2crc (byte* input){
 -- DATE: November 18, 2013
 --
 -- REVISIONS: (Date and Description)
+--			Dec 1, 2013
+--			Chris Holisky
+--			Changed function to take byte instead of char
+--			Changed funtion to take only one argument
 --
 -- DESIGNER: Chris Holisky
 --
 -- PROGRAMMER: Chris Holisky
 --
--- INTERFACE: BOOL MakeCRC(char* input, byte* crc)
+-- INTERFACE: BOOL MakeCRC(byte* input)
 --		byte* input: the data word
---		byte* crc: the position of the CRC in the code word
+--		
 --
--- RETURNS: Whether or not the CRC got made?  This will change......
+-- RETURNS: Whether or not the CRC got made.
 --
 --
 -- NOTES:
---This function takes in the data word and generates a code word (or it will someday)
+--This function takes in the data word and generates a code word.
 --
 ----------------------------------------------------------------------------------------------------------------------*/
   
@@ -212,16 +227,20 @@ if(!(code=crc16_ccitt(input, 1022))){return FALSE;}
 -- DATE: November 18, 2013
 --
 -- REVISIONS: (Date and Description)
+--			Dec 1, 2013
+--			Chris Holisky
+--			Changed function to take byte instead of char
+--			Changed funtion to take only one argument
 --
 -- DESIGNER: Chris Holisky
 --
 -- PROGRAMMER: Chris Holisky
 --
--- INTERFACE: BOOL MakeCRC(char* input, byte* crc)
+-- INTERFACE: BOOL MakeCRC(byte* input)
 --		byte* input: the code word
---		byte* crc: the position of the CRC in the code word
+--		
 --
--- RETURNS: TRUE or FALSE, Whether or not the CRC matches the data word
+-- RETURNS: Boolean, whether or not the CRC matches the data word
 --
 --
 -- NOTES:
