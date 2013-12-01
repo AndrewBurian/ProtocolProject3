@@ -167,7 +167,7 @@ BOOL SendNext()
 	}
 
 	// add crc
-	if (!MakeCRC(&dataFrame[0], &dataFrame[1022]))
+	if (!MakeCRC(&dataFrame[0]))
 		return FALSE;
 
 	// write to port

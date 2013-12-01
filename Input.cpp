@@ -142,7 +142,7 @@ VOID FillDataFrame()
 	}
 
 	// not a duplicate, is the crc valid?
-	if (!CheckCRC(input, &input[1022]))
+	if (!CheckCRC(input))
 	{
 		// bad CRC, signal for bad data and abandon.
 		SetEvent(hBadDataReceived);
