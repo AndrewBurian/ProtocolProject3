@@ -1,12 +1,8 @@
 #include "BCP.h"
 #include <queue>
-//#include <deque>
-//#include <list>
-//#include <string>
 
+//event declarations
 HANDLE hOutputReady = CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE);
-
-
 HANDLE hInputEvents[2] = {CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE),
 	CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM)};
 
@@ -28,7 +24,9 @@ HANDLE hInputEvents[2] = {CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE)
 -- RETURNS: returns 0 on success;
 -- 
 -- NOTES:
--- This function is used to write the file to be sent into the output queue.
+-- This function is used to write the file to be sent into the output queue.  It
+--	takes the file to be sent and pushes it, one byte at a time into the output
+--	queue.
 --
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI FileBufferThread(LPVOID threadParams)
@@ -43,7 +41,6 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 
 	if (INVALID_HANDLE_VALUE == 
 		(hFile = CreateFile (fileName, GENERIC_READ, FILE_SHARE_READ,
-		//(hFile = CreateFile ((LPCWSTR)fileName, GENERIC_READ, FILE_SHARE_READ,
 		NULL, OPEN_EXISTING, 0, NULL)))
 		return FALSE ;
 
@@ -78,8 +75,8 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 -- RETURNS: returns 0 on success;
 -- 
 -- NOTES:
--- This function takes in the data received from the receive buffer one byte at a time 
---	and sends it to a display function
+-- This function takes in the data received from the receive buffer one byte at a time, 
+--	converts it to wide characters and then sends it to a display function
 --
 ----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI FileWriterThread(LPVOID threadParams)
@@ -89,34 +86,17 @@ DWORD WINAPI FileWriterThread(LPVOID threadParams)
 	int waits;
 	queue<BYTE> *inQueue=((SHARED_DATA_POINTERS*)threadParams)-> p_quInputQueue;
 	BOOL progDone = *((SHARED_DATA_POINTERS*)threadParams)-> p_bProgramDone;
-	inQueue->push('T');
-	inQueue->push('h');
-	inQueue->push('i');
-	inQueue->push('s');
-	inQueue->push(' ');
-	inQueue->push('i');
-	inQueue->push('s');
-	inQueue->push(' ');
-	inQueue->push('a');
-	inQueue->push(' ');
-	inQueue->push('t');
-	inQueue->push('e');
-	inQueue->push('s');
-	inQueue->push('t');
+
 	while(!(progDone))
 	{
-	//waits=	WaitForMultipleObjects(2, hInputEvents, FALSE, INFINITE);
-	//if(waits==WAIT_OBJECT_0 + 1){break;}
+		waits=	WaitForMultipleObjects(2, hInputEvents, FALSE, INFINITE);
+		if(waits==WAIT_OBJECT_0 + 1){break;}
 		while(!(inQueue->empty()))
 		{
 			if(count==1022){break;}
 			else{
 				buffer[count]=(inQueue->front());
 				count++;
-				//get the length of the current buffer string, add the characters one at a time 
-				//to the appropriate places then add the terminating null character
-				//sprintf_s(buffer,1, %s%c, (CHAR*)inQueue->front());
-				//if only every other character is printed, remove the pop
 				inQueue->pop();
 			}
 		}
@@ -127,7 +107,7 @@ DWORD WINAPI FileWriterThread(LPVOID threadParams)
 			wchar_t * wcstring = new wchar_t[newsize];
 			size_t convertedChars = 0;
 			mbstowcs_s(&convertedChars, wcstring, newsize, buffer, _TRUNCATE);
-			//send buffer to display function
+			//send converted buffer to display function
 			GUI_Text(wcstring);
 			buffer[0]='\0';
 			count=0;
