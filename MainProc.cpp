@@ -142,8 +142,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 			break;
 		}
 		break;
-
-	case WM_DESTROY:
+	case WM_CLOSE:
 		if (!quMasterOutputQueue.empty())
 		{
 			int msgresult = MessageBox(hwnd, TEXT("Files are currently being sent. Are you sure you wish to exit?"), 
@@ -151,7 +150,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 				MB_OKCANCEL | MB_ICONEXCLAMATION);
 			if (msgresult != IDOK)
 				break;
+			DestroyWindow(hwnd);
 		}
+	case WM_DESTROY:
 		bMasterProgramDone = TRUE;
 		SetEvent(hMasterProgramDoneEvent);
 
