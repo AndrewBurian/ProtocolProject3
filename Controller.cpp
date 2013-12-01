@@ -46,42 +46,64 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 	int	   signaled		= -1;
 	HANDLE hEvents[3]	= { CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ),
 							CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE),
-							CreateEvent(NULL, TRUE, FALSE, EVENT_END_PROGRAM) };
+							CreateEvent(NULL, TRUE, FALSE, EVENT_END_PROGRAM)};
 	output_queue		= ((SHARED_DATA_POINTERS*)params)->p_quOutputQueue;
+	BOOL *bProgramDone	= ((SHARED_DATA_POINTERS*)params)->p_bProgramDone;
+	BOOL bTxStopped		= FALSE;
 
-	while ((signaled = WaitForMultipleObjects(3, hEvents, FALSE, INFINITE)) != WAIT_OBJECT_0 + 2)
+	while (!*bProgramDone)
 	{
+		Sleep(TIMEOUT);		// Give time for the other side to grab the line.
+
 		int retVal;
 
-		if (signaled == WAIT_OBJECT_0) // ENQ received
+		if(!output_queue->empty())
+			SetEvent(hEvents[1]);		// if there is still output to send, make sure the event is set
+
+		signaled = WaitForMultipleObjects(3, hEvents, FALSE, INFINITE);
+
+		//if(bTxStopped)				// If there was something sending before, then output is still available
+		//	SetEvent(hEvents[1]);
+
+		switch(signaled)
 		{
+		
+		case WAIT_OBJECT_0: // ENQ received
 			//MessageBox(NULL, TEXT("ENQ received"), TEXT("Message"), MB_OK);
 			retVal = RxProc();
 
 			if (retVal == RET_END_PROGRAM)
+			{
+				//*bProgramDone = TRUE;			//Andrew - Not needed, the bool will for sure be set by main
 				break;
+			}
 			else if (retVal == RX_RET_DATA_TIMEOUT)
 			{
 				// Do something with packet statistics
 			}
-		}
-		else if (signaled - WAIT_OBJECT_0 + 1) // Output availble
-		{
+			break;
+		case WAIT_OBJECT_0 + 1: // Output availble
 			//MessageBox(NULL, TEXT("Output Available"), TEXT("Message"), MB_OK);
 			retVal = TxProc();
+			
+			//if(!output_queue->empty()) // The file wasn't finished sending
+			//	bTxStopped = TRUE;
 
 			if (retVal == RET_END_PROGRAM)
+			{
+				//*bProgramDone = TRUE;			//Andrew - Not needed, the bool will for sure be set by main
 				break;
+			}
 			else if (retVal == TX_RET_EXCEEDED_RETRIES)
 			{
 				MessageBox(NULL, TEXT("Exceeded retransmission attempts."), TEXT("Exceeded Retries"), MB_OK);
 				//Do something with packet statistics
 			}
-		}
-		else if (signaled == WAIT_FAILED)
-		{
+			break;
+		case WAIT_FAILED:
 			MessageError(TEXT("Waiting for ENQ or Output Available in ProtocolControlThread failed"));
 			SetEvent(hEvents[2]);
+			*bProgramDone = TRUE;
 			return 0;
 		}
 	}
@@ -93,14 +115,15 @@ int TxProc()
 	int		signaled	= -1;
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
-						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK) };
+						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK),
+						  CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ) };
 	size_t send_count = 0;
 
 	SendENQ();
 
 	while (!output_queue->empty() && send_count < SEND_LIMIT)
 	{
-		signaled = WaitForMultipleObjects(3, hEvents, FALSE, TIMEOUT); // possible issue: program ends after timeout
+		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // possible issue: program ends after timeout
 		switch (signaled)
 		{
 		case WAIT_OBJECT_0:		// End of program
@@ -140,6 +163,10 @@ int TxProc()
 			}
 			break;
 		}
+
+		case WAIT_OBJECT_0 + 3:
+			Sleep((rand() % TIMEOUT) + TIMEOUT);
+			break;
 
 		case WAIT_FAILED: // something's clearly gone horribly wrong; display a message and exit
 			MessageError(TEXT("Waiting for an acknowledgement in SendProc failed"));
