@@ -39,6 +39,7 @@
 static int TxProc();
 static int RxProc();
 static void MessageError(const TCHAR* message);
+queue<BYTE> *output_queue = NULL;
 
 DWORD WINAPI ProtocolControlThread(LPVOID params)
 {
@@ -46,6 +47,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 	HANDLE hEvents[3]	= { CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ),
 							CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE),
 							CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM) };
+	output_queue		= ((SHARED_DATA_POINTERS*)params)->p_quOutputQueue;
 
 	while ((signaled = WaitForMultipleObjects(3, hEvents, FALSE, INFINITE)) != WAIT_OBJECT_0 + 2)
 	{
@@ -89,7 +91,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 
 int TxProc()
 {
-	BOOL	more_data	= TRUE;
 	int		signaled	= -1;
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
@@ -97,7 +98,7 @@ int TxProc()
 
 	SendENQ();
 
-	while (more_data)
+	while (!output_queue->empty())
 	{
 		signaled = WaitForMultipleObjects(3, hEvents, FALSE, TIMEOUT); // possible issue: program ends after timeout
 		switch (signaled)
