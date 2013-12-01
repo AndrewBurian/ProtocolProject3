@@ -29,7 +29,7 @@ using namespace std;
 
 // Definitions
 // ----------------------------------------------------------------------------
-#define TIMEOUT 200
+#define TIMEOUT INFINITE
 #define SEND_LIMIT 5
 
 #define ACK 0x06
@@ -68,6 +68,7 @@ BOOL SendNAK();
 BOOL SendEOT();
 BOOL SendENQ();
 VOID SetupOutput(SHARED_DATA_POINTERS* dat);
+VOID ClearOutputQueue();
 
 //CRC
 BOOL MakeCRC(byte* input, byte* crc);
@@ -86,6 +87,10 @@ BOOL CheckCRC(byte* input, byte* crc);
 #define EVENT_OUTPUT_AVAILABLE TEXT("BCP_OUTPUT_AVAILABLE")
 #define EVENT_INPUT_AVAILABLE TEXT("BCP_INPUT_AVAILBLE")
 
+// Global Sycro Objects
+// ----------------------------------------------------------------------------
+#define LOCK_INPUT TEXT("BCP_INPUT_QUEUE_LOCK")
+#define LOCK_OUTPUT TEXT("BCP_OUTPUT_QUEUE_LOCK")
 
 // GUI functionallity
 // ----------------------------------------------------------------------------

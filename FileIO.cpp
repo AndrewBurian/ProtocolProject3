@@ -5,7 +5,10 @@
 HANDLE hOutputReady = CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE);
 HANDLE hInputEvents[2] = {CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE),
 	CreateEvent(NULL, TRUE, FALSE, EVENT_END_PROGRAM)};
+HANDLE hFileIOInLock = CreateMutex(NULL, FALSE, LOCK_INPUT);
+HANDLE hOutputLock = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
 
+queue<BYTE> *outQueue = NULL;
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: FileBufferThread
@@ -35,7 +38,7 @@ HANDLE hInputEvents[2] = {CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE)
 DWORD WINAPI FileBufferThread(LPVOID threadParams)
 {
 	TCHAR * fileName = ((SHARED_DATA_POINTERS*)threadParams)->p_outFileName;
-	queue<BYTE> *outQueue=((SHARED_DATA_POINTERS*)threadParams)-> p_quOutputQueue;
+	outQueue=((SHARED_DATA_POINTERS*)threadParams)-> p_quOutputQueue;
 	BYTE   bySwap ;
 	DWORD  dwBytesRead ;
 	HANDLE hFile ;
@@ -54,7 +57,9 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 	pBuffer[iFileLength] = '\0' ;
 	pBuffer[iFileLength + 1] = '\0' ;
 	for (int i=0;i<iFileLength;++i){
-		outQueue->push(pBuffer[i]);
+		WaitForSingleObject(hOutputLock, INFINITE);
+			outQueue->push(pBuffer[i]);
+		ReleaseMutex(hOutputLock);
 	}
 	SetEvent(hOutputReady);
 	free (pBuffer) ;
@@ -101,9 +106,11 @@ DWORD WINAPI FileWriterThread(LPVOID threadParams)
 		{
 			if(count==1022){break;}
 			else{
-				buffer[count]=(inQueue->front());
-				count++;
-				inQueue->pop();
+				WaitForSingleObject(hFileIOInLock, INFINITE);
+					buffer[count]=(inQueue->front());
+					count++;
+					inQueue->pop();
+				ReleaseMutex(hFileIOInLock);
 			}
 		}
 		if (count>0){
@@ -120,4 +127,15 @@ DWORD WINAPI FileWriterThread(LPVOID threadParams)
 		}
 	}
 	return 0;
+}
+
+
+VOID ClearOutputQueue()
+{
+	WaitForSingleObject(hOutputLock, INFINITE);
+		while(!(outQueue->empty()))
+		{
+			outQueue->pop();
+		}
+	ReleaseMutex(hOutputLock);
 }

@@ -230,6 +230,7 @@ if(!(code=crc16_ccitt(input, 1022))){return FALSE;}
 ----------------------------------------------------------------------------------------------------------------------*/
 BOOL CheckCRC(byte* input, byte* crc)
 {
+	return TRUE;
 	char check[2];
 	int code;
 	//put the two characters into a char array

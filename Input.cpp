@@ -36,6 +36,7 @@ HANDLE hNak				= CreateEvent(NULL, FALSE, FALSE, EVENT_NAK);
 HANDLE hEot				= CreateEvent(NULL, FALSE, FALSE, EVENT_EOT);
 HANDLE hEnq				= CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ);
 HANDLE hInputAvailable	= CreateEvent(NULL, FALSE, FALSE, EVENT_INPUT_AVAILABLE);
+HANDLE hInputLock		= CreateMutex(NULL, FALSE, LOCK_INPUT);
 
 byte input[1024] = { NULL };
 
@@ -160,8 +161,10 @@ VOID FillDataFrame()
 
 	for (int i = 2; i < 1023; ++i)
 	{
-		quInputQueue->push(input[i]);
-		SetEvent(hInputAvailable);
+		WaitForSingleObject(hInputLock, INFINITE);
+			quInputQueue->push(input[i]);
+			SetEvent(hInputAvailable);
+		ReleaseMutex(hInputLock);
 	}
 
 	// done
