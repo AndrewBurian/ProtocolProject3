@@ -142,6 +142,10 @@ VOID update()
 
 	_sntprintf_s(num, 10, fmt, badReceived);
 	TextOut(hdc, 550, 440, num, 2);
+	
+	double bitRateErr = (badReceived + received == 0) ? 0 : ((double)badReceived / ((double)badReceived + (double)received));
+	_sntprintf_s(num, 10, TEXT("%.3d"), bitRateErr);
+	TextOut(hdc, 550, 470, num, 2);
 
 	ReleaseDC(hwndMainWin, hdc);
 }

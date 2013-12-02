@@ -103,6 +103,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 		TextOut(hdc, 410, 380, TEXT("Lost:"), 5);
 		TextOut(hdc, 410, 410, TEXT("Received:"), 9);
 		TextOut(hdc, 410, 440, TEXT("Received Corrupt:"), 17);
+		TextOut(hdc, 410, 470, TEXT("Bit Rate Err:"), 13);
 		EndPaint(hwnd, NULL);
 		
 		ReleaseDC(hwnd, hdc);
