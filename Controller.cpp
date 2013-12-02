@@ -97,10 +97,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 				*bProgramDone = TRUE;
 				break;
 			}
-			else if (retVal == RX_RET_DATA_TIMEOUT)
-			{
-				// Do something with packet statistics
-			}
+
 			break;
 		case WAIT_OBJECT_0 + 1: // Output availble
 			retVal = TxProc();
@@ -113,7 +110,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 			else if (retVal == TX_RET_EXCEEDED_RETRIES)
 			{
 				MessageBox(NULL, TEXT("Exceeded retransmission attempts."), TEXT("Exceeded Retries"), MB_OK);
-				//Do something with packet statistics
 			}
 			break;
 		case WAIT_FAILED:
@@ -149,7 +145,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 static int TxProc()
 {
 	int		signaled	= -1;
-	int		send_count	= 0; // The ENQ doesn't count as a packet, so this starts at -1
+	int		send_count	= 0;
 	int		retries		= 0;
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
