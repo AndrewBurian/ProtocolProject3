@@ -187,6 +187,7 @@ static int TxProc()
 			GUI_Lost();
 			++retries;
 			Resend();
+			GUI_Sent();
 
 			break;
 
@@ -246,7 +247,7 @@ static int RxProc()
 
 	while (TRUE)
 	{
-		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT);
+		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT * 2);
 		switch (signaled)
 		{
 		case WAIT_OBJECT_0:				// End of program
