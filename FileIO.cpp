@@ -60,8 +60,8 @@ DWORD WINAPI FileBufferThread(LPVOID threadParams)
 		WaitForSingleObject(hOutputLock, INFINITE);
 			outQueue->push(pBuffer[i]);
 		ReleaseMutex(hOutputLock);
+		SetEvent(hOutputReady);
 	}
-	SetEvent(hOutputReady);
 	free (pBuffer) ;
 
 	return 0;

@@ -40,6 +40,7 @@ static int TxProc();
 static int RxProc();
 static void MessageError(const TCHAR* message);
 queue<BYTE> *output_queue = NULL;
+HANDLE hQueueMutex		  = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
 
 DWORD WINAPI ProtocolControlThread(LPVOID params)
 {
@@ -50,12 +51,15 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 	output_queue		= ((SHARED_DATA_POINTERS*)params)->p_quOutputQueue;
 	BOOL *bProgramDone	= ((SHARED_DATA_POINTERS*)params)->p_bProgramDone;
 
+
 	while (!*bProgramDone)
 	{
 		int retVal;
 
+		WaitForSingleObject(hQueueMutex, INFINITE);
 		if(!output_queue->empty())
 			SetEvent(hEvents[1]);		// if there is still output to send, make sure the event is set
+		ReleaseMutex(hQueueMutex);
 
 		signaled = WaitForMultipleObjects(3, hEvents, FALSE, INFINITE);
 
@@ -117,8 +121,16 @@ int TxProc()
 	
 		
 
-	while (!output_queue->empty() && send_count < SEND_LIMIT)
+	while (send_count < SEND_LIMIT)
 	{
+		WaitForSingleObject(hQueueMutex, INFINITE);
+		if(output_queue->empty())
+		{
+			break;
+			ReleaseMutex(hQueueMutex);
+		}
+		ReleaseMutex(hQueueMutex);
+
 		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // possible issue: program ends after timeout
 		switch (signaled)
 		{
@@ -152,7 +164,9 @@ int TxProc()
 			
 			if (i == MAX_RETRIES)
 			{
+				WaitForSingleObject(hQueueMutex, INFINITE);
 				ClearOutputQueue();
+				ReleaseMutex(hQueueMutex);
 				return TX_RET_EXCEEDED_RETRIES;
 			}
 			break;
