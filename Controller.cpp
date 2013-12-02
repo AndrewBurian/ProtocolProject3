@@ -141,9 +141,9 @@ int TxProc()
 				GUI_Sent();
 				++send_count;
 
-				signaled = WaitForSingleObject(hEvents[1], TIMEOUT); // Wait for an ACK
-
-				if (signaled == WAIT_OBJECT_0)
+				signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // Wait for ACK/NAK
+				
+				if (signaled == WAIT_OBJECT_0 + 1)
 					break;
 
 				GUI_Lost();
@@ -160,7 +160,7 @@ int TxProc()
 
 		case WAIT_OBJECT_0 + 3:
 			Sleep((rand() % TIMEOUT) + TIMEOUT);
-			break;
+			return TX_RET_SUCCESS;
 
 		case WAIT_FAILED: // something's clearly gone horribly wrong; display a message and exit
 			MessageError(TEXT("Waiting for an acknowledgement in SendProc failed"));
