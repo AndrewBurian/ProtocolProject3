@@ -25,13 +25,18 @@ TxProc
 ------------------
 Tx ENQ
 	While there's data to send, the sending limit isn't reached, and retransmit hasn't failed
-		Create Packet
-		Tx Packet
-		If response times out
-			While Retransmission Attempts <= 5
-				Attempt to Retransmit Packet
+	Wait for End of Program, an ACK to be received, a NAK to be received, or an ENQ to be received
+	If an ACK was received
+		Send next packet
+	Else If Response times out or NAK was received
+		If the last packet sent was the ENQ
+			Return to ProcotolControlThread
+		Else
+			Attempt to retransmit 5 times
 			If more than 5 Retransmission Attempts
 				Retransmit failed; exit loop
+	Else If an ENQ was received
+		Sleep for a random period
 	If Retransmit Failed
 		Return to Idle
 	Else
