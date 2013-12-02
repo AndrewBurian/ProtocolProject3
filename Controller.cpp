@@ -179,11 +179,9 @@ static int TxProc()
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
 			if(send_count == 0 && retries == 0)	// The ENQ hasn't been ACK'd; go back to idle and try again
 				return TX_RET_SUCCESS;
-			--send_count;
 			GUI_Lost();
 			++retries;
 			Resend();
-			++send_count;
 			GUI_Sent();
 
 			break;
@@ -245,7 +243,7 @@ static int RxProc()
 
 	while (TRUE)
 	{
-		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT);
+		signaled = WaitForMultipleObjects(4, hEvents, FALSE, INFINITE);
 		switch (signaled)
 		{
 		case WAIT_OBJECT_0:				// End of program
