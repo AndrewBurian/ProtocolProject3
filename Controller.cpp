@@ -76,7 +76,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 
 	while (!*bProgramDone)
 	{
-		Debug_out(TEXT("Idle"), 4);
 		int retVal;
 
 		WaitForSingleObject(hQueueMutex, INFINITE);
@@ -97,10 +96,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 				*bProgramDone = TRUE;
 				break;
 			}
-			else if (retVal == RX_RET_DATA_TIMEOUT)
-			{
-				// Do something with packet statistics
-			}
+
 			break;
 		case WAIT_OBJECT_0 + 1: // Output availble
 			retVal = TxProc();
@@ -113,7 +109,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 			else if (retVal == TX_RET_EXCEEDED_RETRIES)
 			{
 				MessageBox(NULL, TEXT("Exceeded retransmission attempts."), TEXT("Exceeded Retries"), MB_OK);
-				//Do something with packet statistics
 			}
 			break;
 		case WAIT_FAILED:
@@ -149,13 +144,12 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 static int TxProc()
 {
 	int		signaled	= -1;
-	int		send_count	= 0; // The ENQ doesn't count as a packet, so this starts at -1
+	int		send_count	= 0;
 	int		retries		= 0;
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ) };
-	Debug_out(TEXT("TX"), 2);
 	SendENQ();
 
 	while (send_count < SEND_LIMIT && retries < MAX_RETRIES)
@@ -184,17 +178,14 @@ static int TxProc()
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
 			if(send_count == 0 && retries == 0)	// The ENQ hasn't been ACK'd; go back to idle and try again
 				return TX_RET_SUCCESS;
-			--send_count;
 			GUI_Lost();
 			++retries;
 			Resend();
-			++send_count;
 			GUI_Sent();
 
 			break;
 
 		case WAIT_OBJECT_0 + 3:
-			Debug_out(TEXT("ENQ collison"), 12);
 			Sleep((rand() % TIMEOUT) + TIMEOUT);
 			return TX_RET_SUCCESS;
 
@@ -245,7 +236,6 @@ static int RxProc()
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_BAD_DATA_RECEIVED),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_EOT)};
 	
-	Debug_out(TEXT("RX"), 2);
 	SendACK(); // Acknowledge the ENQ
 
 	while (TRUE)
@@ -268,8 +258,6 @@ static int RxProc()
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
 			return RX_RET_SUCCESS;
 		case WAIT_TIMEOUT:
-			Debug_out(TEXT("RX - timeout"), 10);
-			Sleep(500);
 			return RX_RET_DATA_TIMEOUT;
 		case WAIT_FAILED:				// Something went wrong; end the program
 			MessageError(TEXT("Waiting for data, EOT or end of program in RxProc failed"));

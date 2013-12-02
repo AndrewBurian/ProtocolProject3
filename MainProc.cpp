@@ -1,7 +1,5 @@
 #include "BCP.h"
 
-//#define DEBUG
-
 #define BTN_CONNECT 5001
 #define BTN_SEND	5002
 
@@ -47,17 +45,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 
 		btn2 = CreateWindow(TEXT("Button"), TEXT("Send File"), WS_CHILD | BS_PUSHBUTTON|WS_DISABLED, 
 			400, 200, 80, 20, hwnd, (HMENU)BTN_SEND, NULL, NULL);
-#ifdef DEBUG
-		btnACK = CreateWindow(TEXT("Button"), TEXT("ACK"), WS_CHILD | BS_PUSHBUTTON, 
-			500, 100, 80, 20, hwnd, (HMENU)ACK, NULL, NULL);
-		btnENQ = CreateWindow(TEXT("Button"), TEXT("ENQ"), WS_CHILD | BS_PUSHBUTTON, 
-			500, 150, 80, 20, hwnd, (HMENU)ENQ, NULL, NULL);
-		btnNAK = CreateWindow(TEXT("Button"), TEXT("NAK"), WS_CHILD | BS_PUSHBUTTON, 
-			500, 200, 80, 20, hwnd, (HMENU)NAK, NULL, NULL);
-		ShowWindow(btnACK, SW_SHOW);
-		ShowWindow(btnENQ, SW_SHOW);
-		ShowWindow(btnNAK, SW_SHOW);
-#endif
 		ShowWindow(edit, SW_SHOW);
 		ShowWindow(btn1, SW_SHOW);
 		ShowWindow(btn2, SW_SHOW);
@@ -74,7 +61,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 		TextOut(hdc, 410, 380, TEXT("Lost:"), 5);
 		TextOut(hdc, 410, 410, TEXT("Received:"), 9);
 		TextOut(hdc, 410, 440, TEXT("Received Corrupt:"), 17);
-		Debug_out(TEXT("Debug Statements Here"), 21);
 		EndPaint(hwnd, NULL);
 		
 		ReleaseDC(hwnd, hdc);
@@ -126,10 +112,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 			EnableWindow(btn1, FALSE);
 
 			SetupOutput(&MasterDat);
-#ifndef DEBUG
 			threads[0] = CreateThread(NULL, NULL, ProtocolControlThread, (LPVOID)&MasterDat, NULL, NULL);
 			threads[1] = CreateThread(NULL, NULL, SerialReadThread, (LPVOID)&MasterDat, NULL, NULL);
-#endif
 			threads[2] = CreateThread(NULL, NULL, FileWriterThread, (LPVOID)&MasterDat, NULL, NULL);
 			break;
 
