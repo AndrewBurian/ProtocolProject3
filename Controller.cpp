@@ -38,6 +38,7 @@
 
 static int TxProc();
 static int RxProc();
+static int AttemptRetransmission(size_t *send_count, HANDLE *hEvents);
 static void MessageError(const TCHAR* message);
 queue<BYTE> *output_queue = NULL;
 HANDLE hQueueMutex		  = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
@@ -189,7 +190,7 @@ int TxProc()
 	return TX_RET_SUCCESS;
 }
 
-int RxProc()
+static int RxProc()
 {
 	int	   signaled		= -1;
 	HANDLE hEvents[4] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
@@ -229,6 +230,47 @@ int RxProc()
 	return RET_END_PROGRAM;				
 }
 
+
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:	AttemptRetransmission
+--
+-- DATE: 		November 2, 2013
+--
+-- REVISIONS: 	none
+--
+-- DESIGNER: 	Shane Spoor
+--
+-- PROGRAMMER: 	Shane Spoor
+--
+-- INTERFACE: 	int AttemptRetransmission(size_t *send_count, HANDLE *hEvents)
+--					size_t *send_count: Pointer to variable holding the number of packets successfully sent.
+--					HANDLE *hEvents:	Array of events to wait on while retransmitting.
+--
+-- RETURNS: 	Number of retransmission attempts.
+--
+-- NOTES:
+-- Called when a packet is lost to attempt retransmission. If this returns MAX_RETRIES, the ProtocolControlThread
+----------------------------------------------------------------------------------------------------------------------*/
+static int AttemptRetransmission(size_t *send_count, HANDLE *hEvents)
+{
+	int i;
+	int signaled;
+	for (i = 0; i < MAX_RETRIES; ++i)
+	{
+		Resend();
+		GUI_Sent();
+		*++send_count;
+		
+		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // Wait for ACK/NAK
+		if (signaled == WAIT_OBJECT_0 + 1)
+			break;
+	
+		GUI_Lost();
+		*--send_count;
+	}
+	return i;
+}
 
 // Displays a formatted error message containing the error code from GetLastError.
 void MessageError(const TCHAR* message)
