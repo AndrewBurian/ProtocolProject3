@@ -38,7 +38,7 @@
 
 static int TxProc();
 static int RxProc();
-static int AttemptRetransmission(int *send_count, HANDLE *hEvents);
+static int AttemptRetransmission(int *send_count, HANDLE *hEvents, int *signaled);
 static void MessageError(const TCHAR* message);
 queue<BYTE> *output_queue = NULL;
 HANDLE hQueueMutex		  = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
@@ -149,6 +149,7 @@ static int TxProc()
 {
 	int		signaled	= -1;
 	int		send_count	= 0; // The ENQ doesn't count as a packet, so this starts at -1
+	int		retries		= 0;
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK),
@@ -156,7 +157,7 @@ static int TxProc()
 
 	SendENQ();
 
-	while (send_count < SEND_LIMIT)
+	while (send_count < SEND_LIMIT && retries < MAX_RETRIES)
 	{
 		WaitForSingleObject(hQueueMutex, INFINITE);
 		if(output_queue->empty())
@@ -174,19 +175,19 @@ static int TxProc()
 		case WAIT_OBJECT_0 + 1: // ACK Received
 			SendNext();
 			++send_count;
+			retries = 0;
 			GUI_Sent();
 			break;
 		case WAIT_OBJECT_0 + 2:
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
-		{
-			GUI_Lost();
 			if(send_count == 0)	// The ENQ hasn't been ACK'd; go back to idle and try again
 				return TX_RET_SUCCESS;
-			if(AttemptRetransmission(&send_count, hEvents) == MAX_RETRIES)
-				return TX_RET_EXCEEDED_RETRIES;
+			GUI_Lost();
+			--send_count;
+			++retries;
+			Resend();
 
 			break;
-		}
 
 		case WAIT_OBJECT_0 + 3:
 			Sleep((rand() % TIMEOUT) + TIMEOUT);
@@ -200,6 +201,13 @@ static int TxProc()
 	}
 
 	// if we've gotten out of the loop, then there's no more data to send or the limit was reached
+	if(retries == MAX_RETRIES)
+	{
+		WaitForSingleObject(hQueueMutex, INFINITE);
+		ClearOutputQueue();
+		ReleaseMutex(hQueueMutex);
+		return TX_RET_EXCEEDED_RETRIES;
+	}
 	SendEOT();
 	Sleep(TIMEOUT);		// Give time for the other side to grab the line.
 	return TX_RET_SUCCESS;
@@ -280,24 +288,24 @@ static int RxProc()
 -- INTERFACE: 	int AttemptRetransmission(size_t *send_count, HANDLE *hEvents)
 --					size_t *send_count: Pointer to variable holding the number of packets successfully sent.
 --					HANDLE *hEvents:	Array of events to wait on while retransmitting.
+--					int *signaled		Pointer to the return value for WaitForMultipleObjects.
 --
 -- RETURNS: 	Number of retransmission attempts.
 --
 -- NOTES:
 -- Called when a packet is lost to attempt retransmission. If this returns MAX_RETRIES, the ProtocolControlThread
 ----------------------------------------------------------------------------------------------------------------------*/
-static int AttemptRetransmission(int *send_count, HANDLE *hEvents)
+static int AttemptRetransmission(int *send_count, HANDLE *hEvents, int *signaled)
 {
 	int i;
-	int signaled;
 	for (i = 0; i < MAX_RETRIES; ++i)
 	{
 		Resend();
 		GUI_Sent();
 		*++send_count;
 		
-		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // Wait for ACK/NAK
-		if (signaled == WAIT_OBJECT_0 + 1)
+		*signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // Wait for ACK/NAK
+		if (*signaled == WAIT_OBJECT_0 + 1)
 			break;
 	
 		GUI_Lost();
