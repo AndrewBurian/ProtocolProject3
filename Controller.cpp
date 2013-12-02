@@ -178,6 +178,7 @@ static int TxProc()
 			SendNext();
 			++send_count;
 			GUI_Sent();
+			Debug_out(TEXT("TX - pkt"), 8);
 			break;
 		case WAIT_OBJECT_0 + 2:
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
@@ -249,7 +250,7 @@ static int RxProc()
 
 	while (TRUE)
 	{
-		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT);
+		signaled = WaitForMultipleObjects(4, hEvents, FALSE, INFINITE);
 		switch (signaled)
 		{
 		case WAIT_OBJECT_0:				// End of program
@@ -257,15 +258,18 @@ static int RxProc()
 		case WAIT_OBJECT_0 + 1:			// Good data received
 			GUI_Received();
 			SendACK();
+			Debug_out(TEXT("RX - ACK"), 8);
 			break;
 		case WAIT_OBJECT_0 + 2:			// Bad data received; send NAK
 			GUI_ReceivedBad();
 			SendNAK();
+			Debug_out(TEXT("RX - NAK"), 8);
 			break;
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
 			return RX_RET_SUCCESS;
 		case WAIT_TIMEOUT:
-			Debug_out(TEXT("RX timeout"), 10);
+			Debug_out(TEXT("RX - timeout"), 10);
+			Sleep(500);
 			return RX_RET_DATA_TIMEOUT;
 		case WAIT_FAILED:				// Something went wrong; end the program
 			MessageError(TEXT("Waiting for data, EOT or end of program in RxProc failed"));
