@@ -155,7 +155,7 @@ static int TxProc()
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ) };
 
 	SendENQ();
-	if((signaled = WaitForSingleObject(hEvents[1], TIMEOUT)) != WAIT_OBJECT_0);
+	if((signaled = WaitForSingleObject(hEvents[1], TIMEOUT)) != WAIT_OBJECT_0 + 1);
 	{		
 		Sleep(TIMEOUT);
 		return TX_RET_SUCCESS;
