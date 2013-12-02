@@ -23,25 +23,25 @@
 // TxProc/RxProc Return value if the program ends while sending or receiving
 #define RET_END_PROGRAM			-1
 
-// TxProc
-// return values
+// TxProc return values
 #define TX_RET_SUCCESS				0
 #define TX_RET_NO_ENQ				1
 #define TX_RET_EXCEEDED_RETRIES		2
-// other stuff
-#define MAX_RETRIES	SEND_LIMIT - 1
 
-// RxProc
-// return vales
+// RxProc return vales
 #define RX_RET_SUCCESS			0
 #define RX_RET_DATA_TIMEOUT		1
+
+// other stuff
+#define MAX_RETRIES	SEND_LIMIT - 1
 
 static int TxProc();
 static int RxProc();
 static int AttemptRetransmission(int *send_count, HANDLE *hEvents, int *signaled);
 static void MessageError(const TCHAR* message);
-queue<BYTE> *output_queue = NULL;
-HANDLE hQueueMutex		  = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
+
+queue<BYTE> *output_queue = NULL;									// Output buffer containing file data
+HANDLE hQueueMutex		  = CreateMutex(NULL, FALSE, LOCK_OUTPUT);	// Handle to the output queue mutex
 
 
 /*------------------------------------------------------------------------------------------------------------------
@@ -185,7 +185,7 @@ static int TxProc()
 			break;
 
 		case WAIT_OBJECT_0 + 3:
-			Sleep((rand() % TIMEOUT) + TIMEOUT);
+			Sleep((rand() % (TIMEOUT * 2)) + TIMEOUT);
 			return TX_RET_SUCCESS;
 
 		case WAIT_FAILED: // something's clearly gone horribly wrong; display a message and exit
@@ -215,9 +215,9 @@ static int TxProc()
 --
 -- REVISIONS: 	none
 --
--- DESIGNER: 	Shane Spoor
+-- DESIGNER: 	Ashley Tham
 --
--- PROGRAMMER: 	Shane Spoor
+-- PROGRAMMER: 	Ashley Tham
 --
 -- INTERFACE: 	static int RxProc
 --
@@ -274,9 +274,9 @@ static int RxProc()
 --
 -- REVISIONS: 	none
 --
--- DESIGNER: 	Shane Spoor
+-- DESIGNER: 	Ashley Tham
 --
--- PROGRAMMER: 	Shane Spoor
+-- PROGRAMMER: 	Ashley Tham
 --
 -- INTERFACE: 	int MessageError(const TCHAR* message)
 --					const TCHAR *message: The error message to print.
