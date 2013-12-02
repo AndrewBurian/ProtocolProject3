@@ -1,3 +1,23 @@
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:	MainProc.cpp	The entry point for messages
+--
+-- PROGRAM:		BCP
+--
+-- FUNCTIONS:
+--	LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+--
+-- DATE: 		November 02, 2013
+--
+-- REVISIONS: 	Andrew Burian
+--				Added debug mode if DEBUG defined.
+--
+-- DESIGNER: 	Andrew Burian
+--
+-- PROGRAMMER: 	Andrew Burian
+--
+-- NOTES:
+-- 
+----------------------------------------------------------------------------------------------------------------------*/
 #include "BCP.h"
 
 //#define DEBUG
@@ -30,6 +50,29 @@ SHARED_DATA_POINTERS MasterDat;
 
 HWND btnACK, btnNAK, btnENQ;
 
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:	WndProc
+--
+-- DATE: 		November 2, 2013
+--
+-- REVISIONS: 	Chris Holisky
+--				Added Comm configuration logic
+--
+--				Shane Spoor
+--				Cleaned closing logic to allow abort closing
+--
+-- DESIGNER: 	Andrew Burian
+--
+-- PROGRAMMER: 	Andrew Burian
+--
+-- INTERFACE: 	LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+--
+-- RETURNS: 	CALLBACK
+--
+-- NOTES:
+--
+----------------------------------------------------------------------------------------------------------------------*/
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 	WPARAM wParam, LPARAM lParam)
 {
