@@ -1,0 +1,38 @@
+ProtocolDriver
+--------------
+While the Program isn't done
+	Check if there's output from incomplete previous transfer
+		If there is, set Output Available event to signaled state
+	Wait for either ENQ Rx'd or Output Available event
+		If ENQ Rx'd
+			Call RxProc
+		Else if Output Available
+			Call TxProc
+
+RxProc
+------------------
+Tx ACK1
+While True
+	Wait for Data, Bad Data or EOT to be Rx'd or the program to end
+	If Rx EOT or connection timed out
+		Return to Idle
+	Else If Rx Data
+		Tx ACK2
+	Else If Rx Bad Data
+		Tx NAK
+
+TxProc
+------------------
+Tx ENQ
+	While there's data to send, the sending limit isn't reached, and retransmit hasn't failed
+		Create Packet
+		Tx Packet
+		If response times out
+			While Retransmission Attempts <= 5
+				Attempt to Retransmit Packet
+			If more than 5 Retransmission Attempts
+				Retransmit failed; exit loop
+	If Retransmit Failed
+		Return to Idle
+	Else
+		Tx EOT
