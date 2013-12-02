@@ -122,11 +122,10 @@ int ReadIn(byte* frame, unsigned len, DWORD wait)
 VOID FillDataFrame()
 {
 	// fill the frame even if it's a duplicate to clear the buffer
-	switch (ReadIn(&input[2], 1022, TIMEOUT))
+	switch (ReadIn(&input[2], 1022, INFINITE))
 	{
 	// in all cases of failure, back out and let the main flow deal with it
 	case READ_TIMEOUT:
-		SetEvent(hBadDataReceived);
 		return;
 	case READ_ERROR:
 		return;
@@ -153,6 +152,7 @@ VOID FillDataFrame()
 	// Data not duplicate, crc ok
 	// we have a data frame.
 	// signal we have it, update expecting, send to input buffer.
+	GUI_Received();
 	SetEvent(hDataReceived);
 	
 	if (expected == DC1)
@@ -194,7 +194,7 @@ VOID FillDataFrame()
 ----------------------------------------------------------------------------------------------------------------------*/
 VOID ReadCtrl()
 {
-	switch (ReadIn(&input[1], 1, TIMEOUT))
+	switch (ReadIn(&input[1], 1, INFINITE))
 	{
 	// in all cases of failure, back out and let the main flow deal with it
 	case READ_TIMEOUT:
