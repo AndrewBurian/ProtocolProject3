@@ -30,8 +30,6 @@ byte dataFrame[1024] = { NULL };
 byte ctrlFrame[2] = { NULL };
 int SOTval = 1;
 
-HANDLE hOutputOutLock = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
-
 queue<BYTE> *quOutputQueue = NULL;
 HANDLE *hOutputCommPort = NULL;
 
@@ -133,11 +131,7 @@ BOOL Resend()
 BOOL SendNext()
 {
 	// check for no data to send
-	WaitForSingleObject(hOutputOutLock, INFINITE);
-		BOOL isEmpty = quOutputQueue->empty();
-	ReleaseMutex(hOutputOutLock);
-
-	if (isEmpty)
+	if (quOutputQueue->empty())
 		return FALSE;
 
 	// start of frame
@@ -160,15 +154,10 @@ BOOL SendNext()
 	int i = 2;
 	for (i = 2; i < 1022; ++i)
 	{
-		WaitForSingleObject(hOutputOutLock, INFINITE);
-			if (quOutputQueue->empty())
-			{
-				ReleaseMutex(hOutputOutLock);
-				break;
-			}
-			dataFrame[i] = quOutputQueue->front();
-			quOutputQueue->pop();
-		ReleaseMutex(hOutputOutLock);
+		if (quOutputQueue->empty())
+			break;
+		dataFrame[i] = quOutputQueue->front();
+		quOutputQueue->pop();
 	}
 	// pad if nessesary
 	while (i < 1022)
