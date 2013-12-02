@@ -1,6 +1,6 @@
 #include "BCP.h"
 
-#define DEBUG
+//#define DEBUG
 
 #define BTN_CONNECT 5001
 #define BTN_SEND	5002
@@ -45,7 +45,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 		btn1 = CreateWindow(TEXT("Button"), TEXT("Connect"), WS_CHILD | BS_PUSHBUTTON, 
 			400, 150, 80, 20, hwnd, (HMENU)BTN_CONNECT, NULL, NULL);
 
-		btn2 = CreateWindow(TEXT("Button"), TEXT("Send File"), WS_CHILD | BS_PUSHBUTTON, 
+		btn2 = CreateWindow(TEXT("Button"), TEXT("Send File"), WS_CHILD | BS_PUSHBUTTON|WS_DISABLED, 
 			400, 200, 80, 20, hwnd, (HMENU)BTN_SEND, NULL, NULL);
 #ifdef DEBUG
 		btnACK = CreateWindow(TEXT("Button"), TEXT("ACK"), WS_CHILD | BS_PUSHBUTTON, 
@@ -121,7 +121,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 			MasterDat.p_quInputQueue = &quMasterInputQueue;
 			MasterDat.p_quOutputQueue = &quMasterOutputQueue;
 
-
+			EnableWindow(btn2,TRUE);
+			EnableWindow(btn1, FALSE);
 
 			SetupOutput(&MasterDat);
 #ifndef DEBUG
