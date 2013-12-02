@@ -126,6 +126,7 @@ VOID FillDataFrame()
 	{
 	// in all cases of failure, back out and let the main flow deal with it
 	case READ_TIMEOUT:
+		SetEvent(hBadDataReceived);
 		return;
 	case READ_ERROR:
 		return;
