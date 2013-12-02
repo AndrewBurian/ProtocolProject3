@@ -76,6 +76,7 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 
 	while (!*bProgramDone)
 	{
+		Debug_out(TEXT("Idle"), 4);
 		int retVal;
 
 		WaitForSingleObject(hQueueMutex, INFINITE);
@@ -154,7 +155,7 @@ static int TxProc()
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ) };
-
+	Debug_out(TEXT("TX"), 2);
 	SendENQ();
 
 	while (send_count < SEND_LIMIT && retries < MAX_RETRIES)
@@ -192,8 +193,8 @@ static int TxProc()
 			break;
 
 		case WAIT_OBJECT_0 + 3:
+			Debug_out(TEXT("ENQ collison"), 12);
 			Sleep((rand() % TIMEOUT) + TIMEOUT);
-			Debug_out(TEXT("End of sleep"), 12);
 			return TX_RET_SUCCESS;
 
 		case WAIT_FAILED: // something's clearly gone horribly wrong; display a message and exit
@@ -242,12 +243,13 @@ static int RxProc()
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_DATA_RECEIVED),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_BAD_DATA_RECEIVED),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_EOT)};
-							
+	
+	Debug_out(TEXT("RX"), 2);
 	SendACK(); // Acknowledge the ENQ
 
 	while (TRUE)
 	{
-		signaled = WaitForMultipleObjects(4, hEvents, FALSE, 7000);
+		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT);
 		switch (signaled)
 		{
 		case WAIT_OBJECT_0:				// End of program
@@ -263,6 +265,7 @@ static int RxProc()
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
 			return RX_RET_SUCCESS;
 		case WAIT_TIMEOUT:
+			Debug_out(TEXT("RX timeout"), 10);
 			return RX_RET_DATA_TIMEOUT;
 		case WAIT_FAILED:				// Something went wrong; end the program
 			MessageError(TEXT("Waiting for data, EOT or end of program in RxProc failed"));
