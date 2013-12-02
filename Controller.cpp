@@ -43,6 +43,27 @@ static void MessageError(const TCHAR* message);
 queue<BYTE> *output_queue = NULL;
 HANDLE hQueueMutex		  = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
 
+
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:	ProtocolControlThread
+--
+-- DATE: 		November 30, 2013
+--
+-- REVISIONS: 	none
+--
+-- DESIGNER: 	Shane Spoor
+--
+-- PROGRAMMER: 	Shane Spoor
+--
+-- INTERFACE: 	DWORD WINAPI ProtocolControlThread(LPVOID params)
+--					LPVOID params Pointer to a struct containing data pointers used across the program.
+--
+-- RETURNS: 	A DWORD indicating the thread's exit status (this should be 0).
+--
+-- NOTES:
+-- Waits continuously for output to become available or an ENQ to be received and calls the corresponding functions
+-- when they are.
+----------------------------------------------------------------------------------------------------------------------*/
 DWORD WINAPI ProtocolControlThread(LPVOID params)
 {
 	int	   signaled		= -1;
@@ -104,35 +125,53 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 	return 0;
 }
 
-int TxProc()
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:	TxProc
+--
+-- DATE: 		November 30, 2013
+--
+-- REVISIONS: 	none
+--
+-- DESIGNER: 	Shane Spoor
+--
+-- PROGRAMMER: 	Shane Spoor
+--
+-- INTERFACE: 	static int TxProc()
+--
+-- RETURNS: 	TX_RET_SUCCESS if the packets are all transmitted succesfully; TX_RET_EXCEEDED_RETRIES if the function
+--				fails to resend a packet; and RET_END_PROGRAM if the program ends during transmission or wait failed.
+--
+-- NOTES:
+-- Called when a packet is lost to attempt retransmission. If this returns MAX_RETRIES, the ProtocolControlThread will
+-- notify the user and ask whether they want to try again.
+----------------------------------------------------------------------------------------------------------------------*/
+static int TxProc()
 {
 	int		signaled	= -1;
+	size_t send_count = 0;
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ) };
-	size_t send_count = 0;
 
 	SendENQ();
-	/*signaled = WaitForSingleObject(hEvents[1], TIMEOUT);
-	if(signaled != WAIT_OBJECT_0)
-	{
-		sleep(TIMEOUT);*/
-
-	
-		
+	if((signaled = WaitForSingleObject(hEvents[1], TIMEOUT)) != WAIT_OBJECT_0);
+	{		
+		Sleep(TIMEOUT);
+		return TX_RET_SUCCESS;
+	}
 
 	while (send_count < SEND_LIMIT)
 	{
 		WaitForSingleObject(hQueueMutex, INFINITE);
 		if(output_queue->empty())
 		{
-			break;
 			ReleaseMutex(hQueueMutex);
+			break;
 		}
 		ReleaseMutex(hQueueMutex);
 
-		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // possible issue: program ends after timeout
+		signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT);
 		switch (signaled)
 		{
 		case WAIT_OBJECT_0:		// End of program
@@ -147,29 +186,8 @@ int TxProc()
 		{
 			GUI_Lost();
 			--send_count;
-			size_t i;
-			for (i = 0; i < MAX_RETRIES; ++i)
-			{
-				Resend();
-				GUI_Sent();
-				++send_count;
-
-				signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // Wait for ACK/NAK
-				
-				if (signaled == WAIT_OBJECT_0 + 1)
-					break;
-
-				GUI_Lost();
-				--send_count;
-			}
-			
-			if (i == MAX_RETRIES)
-			{
-				WaitForSingleObject(hQueueMutex, INFINITE);
-				ClearOutputQueue();
-				ReleaseMutex(hQueueMutex);
+			if(AttemptRetransmission(&send_count, hEvents) == MAX_RETRIES)
 				return TX_RET_EXCEEDED_RETRIES;
-			}
 			break;
 		}
 
@@ -190,6 +208,25 @@ int TxProc()
 	return TX_RET_SUCCESS;
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:	RxProc
+--
+-- DATE: 		November 29, 2013
+--
+-- REVISIONS: 	none
+--
+-- DESIGNER: 	Shane Spoor
+--
+-- PROGRAMMER: 	Shane Spoor
+--
+-- INTERFACE: 	static int RxProc
+--
+-- RETURNS: 	RX_RET_SUCCESS on success, or RX_END_PROGRAM if there was a fatal error or another process set the
+--				end of program event.
+--
+-- NOTES:
+-- Calls appropriate event handlers depending on data received from the other host.
+----------------------------------------------------------------------------------------------------------------------*/
 static int RxProc()
 {
 	int	   signaled		= -1;
@@ -211,7 +248,7 @@ static int RxProc()
 			GUI_Received();
 			SendACK();
 			break;
-		case WAIT_OBJECT_0 + 2:			// Bad data received; do nothing
+		case WAIT_OBJECT_0 + 2:			// Bad data received; send NAK
 			GUI_ReceivedBad();
 			SendNAK();
 			break;
@@ -235,7 +272,7 @@ static int RxProc()
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:	AttemptRetransmission
 --
--- DATE: 		November 2, 2013
+-- DATE: 		November 25, 2013
 --
 -- REVISIONS: 	none
 --
@@ -272,7 +309,25 @@ static int AttemptRetransmission(size_t *send_count, HANDLE *hEvents)
 	return i;
 }
 
-// Displays a formatted error message containing the error code from GetLastError.
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:	MessageError
+--
+-- DATE: 		November 26, 2013
+--
+-- REVISIONS: 	none
+--
+-- DESIGNER: 	Shane Spoor
+--
+-- PROGRAMMER: 	Shane Spoor
+--
+-- INTERFACE: 	int MessageError(const TCHAR* message)
+--					const TCHAR *message: The error message to print.
+--
+-- RETURNS: 	void
+--
+-- NOTES:
+-- Displays a message box containing a formatted error message and the last error from the calling thread.
+----------------------------------------------------------------------------------------------------------------------*/
 void MessageError(const TCHAR* message)
 {
 
