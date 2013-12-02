@@ -129,7 +129,25 @@ DWORD WINAPI FileWriterThread(LPVOID threadParams)
 	return 0;
 }
 
-
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: ClearOutputQueue
+--
+-- DATE: November 19, 2013
+--
+-- REVISIONS: none
+--
+-- DESIGNER: Andrew Burian
+--
+-- PROGRAMMER: Chris Holisky
+--
+-- INTERFACE: VOID ClearOutputQueue()
+--
+-- RETURNS: VOID
+-- 
+-- NOTES:
+-- Clears the output queue in the event of a sending failure
+--
+----------------------------------------------------------------------------------------------------------------------*/
 VOID ClearOutputQueue()
 {
 	WaitForSingleObject(hOutputLock, INFINITE);
