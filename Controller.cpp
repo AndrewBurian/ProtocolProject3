@@ -173,17 +173,18 @@ static int TxProc()
 		case WAIT_OBJECT_0:		// End of program
 			return RET_END_PROGRAM;
 		case WAIT_OBJECT_0 + 1: // ACK Received
-			SendNext();
 			++send_count;
 			retries = 0;
+			if(send_count > 5)
+				break;
+			SendNext();
 			GUI_Sent();
 			break;
 		case WAIT_OBJECT_0 + 2:
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
-			if(send_count == 0)	// The ENQ hasn't been ACK'd; go back to idle and try again
+			if(send_count == 0 && retries == 0)	// The ENQ hasn't been ACK'd; go back to idle and try again
 				return TX_RET_SUCCESS;
 			GUI_Lost();
-			--send_count;
 			++retries;
 			Resend();
 
@@ -191,6 +192,7 @@ static int TxProc()
 
 		case WAIT_OBJECT_0 + 3:
 			Sleep((rand() % TIMEOUT) + TIMEOUT);
+			Debug_out(TEXT("End of sleep"), 10);
 			return TX_RET_SUCCESS;
 
 		case WAIT_FAILED: // something's clearly gone horribly wrong; display a message and exit
@@ -270,48 +272,6 @@ static int RxProc()
 	MessageError(TEXT("RxProc failed due to an unforeseen error")); // How have we even gotten out here? This isn't good
 	SetEvent(hEvents[0]);											// There's probably been some catastrophic failure, so end the program
 	return RET_END_PROGRAM;				
-}
-
-
-
-/*------------------------------------------------------------------------------------------------------------------
--- FUNCTION:	AttemptRetransmission
---
--- DATE: 		November 25, 2013
---
--- REVISIONS: 	none
---
--- DESIGNER: 	Shane Spoor
---
--- PROGRAMMER: 	Shane Spoor
---
--- INTERFACE: 	int AttemptRetransmission(size_t *send_count, HANDLE *hEvents)
---					size_t *send_count: Pointer to variable holding the number of packets successfully sent.
---					HANDLE *hEvents:	Array of events to wait on while retransmitting.
---					int *signaled		Pointer to the return value for WaitForMultipleObjects.
---
--- RETURNS: 	Number of retransmission attempts.
---
--- NOTES:
--- Called when a packet is lost to attempt retransmission. If this returns MAX_RETRIES, the ProtocolControlThread
-----------------------------------------------------------------------------------------------------------------------*/
-static int AttemptRetransmission(int *send_count, HANDLE *hEvents, int *signaled)
-{
-	int i;
-	for (i = 0; i < MAX_RETRIES; ++i)
-	{
-		Resend();
-		GUI_Sent();
-		*++send_count;
-		
-		*signaled = WaitForMultipleObjects(4, hEvents, FALSE, TIMEOUT); // Wait for ACK/NAK
-		if (*signaled == WAIT_OBJECT_0 + 1)
-			break;
-	
-		GUI_Lost();
-		*--send_count;
-	}
-	return i;
 }
 
 /*------------------------------------------------------------------------------------------------------------------
