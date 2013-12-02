@@ -12,6 +12,7 @@ VOID SetupGUI(HWND main, HWND edit)
 	hwndTextBox = edit;
 	update();
 }
+
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION: GUI_Text
 --
@@ -20,8 +21,8 @@ VOID SetupGUI(HWND main, HWND edit)
 -- REVISIONS: (Date and Description)
 --			Dec 1, 2013
 --			Chris Holisky
---			Changed function to take byte instead of char
---			Changed funtion to take only one argument
+--			Revised code to actually append.  Used part of a Microsoft example.
+--			Left code to replace text in edit box for testing purposes
 --
 -- DESIGNER: Chris Holisky
 --
@@ -38,22 +39,10 @@ VOID SetupGUI(HWND main, HWND edit)
 ----------------------------------------------------------------------------------------------------------------------*/
 VOID GUI_Text(TCHAR* text)
 {
-	//text=(TCHAR*)"This is a test.  This is only a test.  Please do not be alarmed.  If it works....";
-	//This might be what we have to use.  We'd have to create a buffer to 
-	//hold all text and then append text to buffer and then redisplay it
+	//This code just displays each packet in the edit box
 	//SetWindowText(hwndTextBox, text);
-	/*
-	//Put window text in string buffer;
-	int len = GetWindowTextLength(hwndTextBox);
-	wchar_t * scrBuffer[10000000];
-	wchar_t buffer[10000];
-	GetWindowText(hwndTextBox, (LPWSTR)scrBuffer, len+1);
-	(scrBuffer, sizeof(text), text);
-	//Concatenate new text to window text
-	*/
-	//put total back on screen
 
- //HWND hEdit = GetDlgItem (,);
+	//This code appends new packets into the edit box
    int ndx = GetWindowTextLength (hwndTextBox);
    SetFocus (hwndTextBox);
    #ifdef WIN32
@@ -67,17 +56,28 @@ VOID GUI_Text(TCHAR* text)
       SendMessage (hwndTextBox, EM_SETSEL, 0, MAKELONG (ndx, ndx));
    #endif
       SendMessage (hwndTextBox, EM_REPLACESEL, 0, (LPARAM) ((LPSTR) text));
-	//SetWindowText(hwndTextBox, (LPCWSTR)NULL);
-	/*
-	int len = GetWindowTextLength(hwndTextBox);
-	std::vector<TCHAR> temp(len + sizeof(text) + 1);
-
-	GetWindowText(hwndTextBox, temp.data(), temp.size());
-	wcscat_s(temp.data(),sizeof(text), (const wchar_t*)text);
-	SetWindowText(hwndTextBox, temp.data());
-	*/
+	
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: GUI_Text
+--
+-- DATE: November 30, 2013
+--
+-- REVISIONS: (Date and Description)
+--
+-- DESIGNER: Chris Holisky
+--
+-- PROGRAMMER: Chris Holisky
+--
+-- INTERFACE: VOID update()
+--
+-- RETURNS: void;
+-- 
+-- NOTES:
+-- This function is draws the packet sent, lost and received statistics onto the window
+--
+----------------------------------------------------------------------------------------------------------------------*/
 VOID update()
 {
 	HDC hdc=	GetDC(hwndMainWin);
