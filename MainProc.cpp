@@ -1,5 +1,7 @@
 #include "BCP.h"
 
+#define DEBUG
+
 #define BTN_CONNECT 5001
 #define BTN_SEND	5002
 
@@ -26,6 +28,8 @@ COMMCONFIG cc;
 
 SHARED_DATA_POINTERS MasterDat;
 
+HWND btnACK, btnNAK, btnENQ;
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 	WPARAM wParam, LPARAM lParam)
 {
@@ -43,7 +47,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 
 		btn2 = CreateWindow(TEXT("Button"), TEXT("Send File"), WS_CHILD | BS_PUSHBUTTON, 
 			400, 200, 80, 20, hwnd, (HMENU)BTN_SEND, NULL, NULL);
-
+#ifdef DEBUG
+		btnACK = CreateWindow(TEXT("Button"), TEXT("ACK"), WS_CHILD | BS_PUSHBUTTON, 
+			500, 100, 80, 20, hwnd, (HMENU)ACK, NULL, NULL);
+		btnENQ = CreateWindow(TEXT("Button"), TEXT("ENQ"), WS_CHILD | BS_PUSHBUTTON, 
+			500, 150, 80, 20, hwnd, (HMENU)ENQ, NULL, NULL);
+		btnNAK = CreateWindow(TEXT("Button"), TEXT("NAK"), WS_CHILD | BS_PUSHBUTTON, 
+			500, 200, 80, 20, hwnd, (HMENU)NAK, NULL, NULL);
+		ShowWindow(btnACK, SW_SHOW);
+		ShowWindow(btnENQ, SW_SHOW);
+		ShowWindow(btnNAK, SW_SHOW);
+#endif
 		ShowWindow(edit, SW_SHOW);
 		ShowWindow(btn1, SW_SHOW);
 		ShowWindow(btn2, SW_SHOW);
@@ -110,10 +124,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 
 
 			SetupOutput(&MasterDat);
-
+#ifndef DEBUG
 			threads[0] = CreateThread(NULL, NULL, ProtocolControlThread, (LPVOID)&MasterDat, NULL, NULL);
 			threads[1] = CreateThread(NULL, NULL, SerialReadThread, (LPVOID)&MasterDat, NULL, NULL);
 			threads[2] = CreateThread(NULL, NULL, FileWriterThread, (LPVOID)&MasterDat, NULL, NULL);
+#endif
 			break;
 
 		case BTN_SEND:
@@ -139,6 +154,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 			{
 				MessageBox(hwnd, TEXT("Not connected. Please select connect first."), TEXT("Error"), MB_OK | MB_ICONERROR);
 			}
+			break;
+
+		case ACK:
+			SendACK();
+			break;
+		case NAK:
+			SendNAK();
+			break;
+		case ENQ:
+			SendENQ();
 			break;
 		}
 		break;
