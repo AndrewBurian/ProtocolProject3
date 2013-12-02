@@ -1,0 +1,34 @@
+FileWriterThread
+----------------
+While the program isn't done
+	Wait for either input to be available or the end of program event
+	If the end of program event is received, exit
+	Else If Input is Available
+		While the input queue isn't empty and we've processed <= 1022 chars
+			Copy the current character to the buffer
+			Pop the current character from the input queue
+		Display the contents of the buffer
+		
+
+FileBufferThread
+----------------
+Open the file
+If file creation fails, then exit the thread
+Read the entire file into a buffer
+Copy the file contents into the output queue and signal that output is available
+Free the temporary buffer
+
+VOID ClearOutputQueue()
+{
+	WaitForSingleObject(hOutputLock, INFINITE);
+		while(!(outQueue->empty()))
+		{
+			outQueue->pop();
+		}
+	ReleaseMutex(hOutputLock);
+}
+
+ClearOutputQueue
+----------------
+While the output queue isn't empty
+	Remove the current char from the queue
