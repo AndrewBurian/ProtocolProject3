@@ -29,7 +29,7 @@ using namespace std;
 
 // Definitions
 // ----------------------------------------------------------------------------
-#define TIMEOUT 1500
+#define TIMEOUT 600
 #define SEND_LIMIT 5
 
 #define ACK 0x06
@@ -101,6 +101,8 @@ VOID GUI_Sent();
 VOID GUI_Received();
 VOID GUI_ReceivedBad();
 VOID GUI_Lost();
+
+VOID Debug_out(TCHAR* text, size_t len);
 
 // Choose File popup
 // ----------------------------------------------------------------------------

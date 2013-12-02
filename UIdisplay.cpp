@@ -123,3 +123,12 @@ VOID GUI_ReceivedBad()
 	++badReceived;
 	update();
 }
+
+VOID Debug_out(TCHAR* text, size_t len)
+{
+	len = (len > 35) ? 35 : len;
+	HDC hdc = GetDC(hwndMainWin);
+	TCHAR out[35] = {0};
+	_sntprintf_s(out, len, TEXT("%s"), text);
+	TextOut(hdc, 450, 500, out, 35);
+}

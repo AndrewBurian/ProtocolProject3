@@ -40,7 +40,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 		edit = CreateWindowEx(
 		 WS_EX_CLIENTEDGE, TEXT("Edit"), NULL,
 		 WS_CHILD | WS_VISIBLE | WS_BORDER|ES_MULTILINE|ES_AUTOHSCROLL|ES_READONLY|WS_VSCROLL,
-		 20, 20, 350,530, hwnd, NULL, NULL, NULL); 
+		 20, 20, 350, 530, hwnd, NULL, NULL, NULL); 
 
 		btn1 = CreateWindow(TEXT("Button"), TEXT("Connect"), WS_CHILD | BS_PUSHBUTTON, 
 			400, 150, 80, 20, hwnd, (HMENU)BTN_CONNECT, NULL, NULL);
@@ -74,6 +74,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 		TextOut(hdc, 410, 380, TEXT("Lost:"), 5);
 		TextOut(hdc, 410, 410, TEXT("Received:"), 9);
 		TextOut(hdc, 410, 440, TEXT("Received Corrupt:"), 17);
+		Debug_out(TEXT("Debug Statements Here"), 21);
 		EndPaint(hwnd, NULL);
 		
 		ReleaseDC(hwnd, hdc);
