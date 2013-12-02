@@ -198,6 +198,7 @@ int RxProc()
 			break;
 		case WAIT_OBJECT_0 + 2:			// Bad data received; do nothing
 			GUI_ReceivedBad();
+			SendNAK();
 			break;
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
 			return RX_RET_SUCCESS;
