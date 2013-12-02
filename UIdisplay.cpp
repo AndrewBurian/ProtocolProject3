@@ -1,3 +1,29 @@
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:	UIDisplay.cpp		A collection of functions for displaying output to the window (packet statistics
+--									and received data).
+--
+-- PROGRAM:		BCP
+--
+-- FUNCTIONS:
+--	VOID update();
+--	VOID SetupGUI();
+--	VOID GUI_Text(TCHAR *text);
+--	VOID GUI_Sent();
+--	VOID GUI_Received();
+--	VOID GUI_ReceivedBad();
+--	VOID GUI_Lost();
+--
+-- DATE: 		November 26, 2013
+--
+-- REVISIONS: 	none
+--
+-- DESIGNER: 	Andrew Burian
+--
+-- PROGRAMMERS: Chris Holisky/Ashley Tham
+--
+-- NOTES:
+-- All functions return a boolean success value.
+----------------------------------------------------------------------------------------------------------------------*/
 #include "BCP.h"
 
 #include <tchar.h>
@@ -6,6 +32,26 @@ HWND hwndMainWin = NULL;
 HWND hwndTextBox = NULL;
 VOID update();
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: SetupGUI
+--
+-- DATE: November 30, 2013
+--
+-- REVISIONS: None
+--
+-- DESIGNER: Ashley Tham
+--
+-- PROGRAMMER: Ashley Tham
+--
+-- INTERFACE: SetupGUI(HWND main, HWND edit)
+--				HWND main: The main (parent) window
+--				HWND edit: The child edit window in which file output will be displayed.
+--
+-- RETURNS: void;
+-- 
+-- NOTES:
+-- Incrememnts a counter when bad packets are received and displays it.
+----------------------------------------------------------------------------------------------------------------------*/
 VOID SetupGUI(HWND main, HWND edit)
 {
 	hwndMainWin = main;
@@ -100,35 +146,98 @@ VOID update()
 	ReleaseDC(hwndMainWin, hdc);
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: GUI_Sent
+--
+-- DATE: November 30, 2013
+--
+-- REVISIONS: None
+--
+-- DESIGNER: Chris Holisky
+--
+-- PROGRAMMER: Chris Holisky
+--
+-- INTERFACE: GUI_Sent(void)
+--
+-- RETURNS: void;
+-- 
+-- NOTES:
+-- Incrememnts a counter when packets are sent (regardless of transmission outcome) and displays it.
+----------------------------------------------------------------------------------------------------------------------*/
 VOID GUI_Sent()
 {
 	++sent;
 	update();
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: GUI_Received
+--
+-- DATE: November 30, 2013
+--
+-- REVISIONS: None
+--
+-- DESIGNER: Chris Holisky
+--
+-- PROGRAMMER: Chris Holisky
+--
+-- INTERFACE: GUI_Received(void)
+--
+-- RETURNS: void;
+-- 
+-- NOTES:
+-- Incrememnts a counter when bad packets are received and displays it.
+----------------------------------------------------------------------------------------------------------------------*/
 VOID GUI_Received()
 {
 	++received;
 	update();
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: GUI_Lost
+--
+-- DATE: November 30, 2013
+--
+-- REVISIONS: None
+--
+-- DESIGNER: Ashley Tham
+--
+-- PROGRAMMER: Ashley Tham
+--
+-- INTERFACE: GUI_Lost(void)
+--
+-- RETURNS: void;
+-- 
+-- NOTES:
+-- Incrememnts a counter when sent packets are lost and displays it.
+----------------------------------------------------------------------------------------------------------------------*/
 VOID GUI_Lost()
 {
 	++lost;
 	update();
 }
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION: GUI_ReceivedBad
+--
+-- DATE: November 30, 2013
+--
+-- REVISIONS: None
+--
+-- DESIGNER: Ashley Tham
+--
+-- PROGRAMMER: Ashley Tham
+--
+-- INTERFACE: GUI_ReceivedBad(void)
+--
+-- RETURNS: void;
+-- 
+-- NOTES:
+-- Incrememnts a counter when bad packets are received and displays it.
+----------------------------------------------------------------------------------------------------------------------*/
 VOID GUI_ReceivedBad()
 {
 	++badReceived;
 	update();
-}
-
-VOID Debug_out(TCHAR* text, size_t len)
-{
-	len = (len > 35) ? 35 : len;
-	HDC hdc = GetDC(hwndMainWin);
-	TCHAR out[35] = {0};
-	_sntprintf_s(out, len, TEXT("%s"), text);
-	TextOut(hdc, 450, 500, out, 35);
 }
