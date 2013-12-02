@@ -1,3 +1,23 @@
+/*------------------------------------------------------------------------------------------------------------------
+-- SOURCE FILE:	MainProc.cpp	The entry point for all messages into the program
+-- 
+-- PROGRAM:		BCP
+--
+-- FUNCTIONS:
+--	LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+--
+--
+-- DATE: 		November 02, 2013
+--
+-- REVISIONS: 	See WndProc
+--
+-- DESIGNER: 	Andrew Burian
+--
+-- PROGRAMMER: 	Andrew Burian
+--
+-- NOTES:
+-- 
+----------------------------------------------------------------------------------------------------------------------*/
 #include "BCP.h"
 
 #define BTN_CONNECT 5001
@@ -28,6 +48,28 @@ SHARED_DATA_POINTERS MasterDat;
 
 HWND btnACK, btnNAK, btnENQ;
 
+/*------------------------------------------------------------------------------------------------------------------
+-- FUNCTION:	WndProc
+--
+-- DATE: 		November 2, 2013
+--
+-- REVISIONS: 	Chris Holisky
+--				Added Comm connection dialogue
+--
+--				Shane Spoor
+--				Allowed exit aborting when sending in progress
+--
+-- DESIGNER: 	Andrew Burian
+--
+-- PROGRAMMER: 	Andrew Burian
+--
+-- INTERFACE: 	LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+--
+-- RETURNS: 	LRESULT
+--
+-- NOTES:
+-- 
+----------------------------------------------------------------------------------------------------------------------*/
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message,
 	WPARAM wParam, LPARAM lParam)
 {
