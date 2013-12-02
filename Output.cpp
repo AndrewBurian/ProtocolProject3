@@ -33,6 +33,7 @@ int SOTval = 1;
 queue<BYTE> *quOutputQueue = NULL;
 HANDLE *hOutputCommPort = NULL;
 HANDLE hOutputOutLock = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
+HANDLE hShutOffOutput = CreateEvent(NULL, FALSE, FALSE, EVENT_OUTPUT_AVAILABLE);
 
 /*------------------------------------------------------------------------------------------------------------------
 -- FUNCTION:	WriteOut
@@ -162,6 +163,7 @@ BOOL SendNext()
 			if (quOutputQueue->empty())
 			{
 				ReleaseMutex(hOutputOutLock);
+				WaitForSingleObject(hShutOffOutput, 0);
 				break;
 			}
 			dataFrame[i] = quOutputQueue->front();

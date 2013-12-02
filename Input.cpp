@@ -152,7 +152,6 @@ VOID FillDataFrame()
 	// Data not duplicate, crc ok
 	// we have a data frame.
 	// signal we have it, update expecting, send to input buffer.
-	GUI_Received();
 	SetEvent(hDataReceived);
 	
 	if (expected == DC1)
