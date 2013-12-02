@@ -38,7 +38,7 @@
 
 static int TxProc();
 static int RxProc();
-static int AttemptRetransmission(size_t *send_count, HANDLE *hEvents);
+static int AttemptRetransmission(int *send_count, HANDLE *hEvents);
 static void MessageError(const TCHAR* message);
 queue<BYTE> *output_queue = NULL;
 HANDLE hQueueMutex		  = CreateMutex(NULL, FALSE, LOCK_OUTPUT);
@@ -148,18 +148,13 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 static int TxProc()
 {
 	int		signaled	= -1;
-	size_t send_count = 0;
+	int		send_count	= 0; // The ENQ doesn't count as a packet, so this starts at -1
 	HANDLE	hEvents[] = { CreateEvent(NULL, FALSE, FALSE, EVENT_END_PROGRAM),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ACK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_NAK),
 						  CreateEvent(NULL, FALSE, FALSE, EVENT_ENQ) };
 
 	SendENQ();
-	if((signaled = WaitForSingleObject(hEvents[1], TIMEOUT)) != WAIT_OBJECT_0 + 1);
-	{		
-		Sleep(TIMEOUT);
-		return TX_RET_SUCCESS;
-	}
 
 	while (send_count < SEND_LIMIT)
 	{
@@ -185,9 +180,11 @@ static int TxProc()
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
 		{
 			GUI_Lost();
-			--send_count;
+			if(send_count == 0)	// The ENQ hasn't been ACK'd; go back to idle and try again
+				return TX_RET_SUCCESS;
 			if(AttemptRetransmission(&send_count, hEvents) == MAX_RETRIES)
 				return TX_RET_EXCEEDED_RETRIES;
+
 			break;
 		}
 
@@ -289,7 +286,7 @@ static int RxProc()
 -- NOTES:
 -- Called when a packet is lost to attempt retransmission. If this returns MAX_RETRIES, the ProtocolControlThread
 ----------------------------------------------------------------------------------------------------------------------*/
-static int AttemptRetransmission(size_t *send_count, HANDLE *hEvents)
+static int AttemptRetransmission(int *send_count, HANDLE *hEvents)
 {
 	int i;
 	int signaled;
