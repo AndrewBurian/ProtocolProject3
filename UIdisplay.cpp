@@ -128,7 +128,7 @@ VOID update()
 {
 	HDC hdc=	GetDC(hwndMainWin);
 
-	TCHAR num[3];
+	TCHAR num[7];
 	const TCHAR *fmt = TEXT("%d");
 
 	_sntprintf_s(num, 10, fmt, sent);
@@ -144,8 +144,8 @@ VOID update()
 	TextOut(hdc, 550, 440, num, 2);
 	
 	double bitRateErr = (badReceived + received == 0) ? 0 : ((double)badReceived / ((double)badReceived + (double)received));
-	_sntprintf_s(num, 10, TEXT("%.3d"), bitRateErr);
-	TextOut(hdc, 550, 470, num, 2);
+	_sntprintf_s(num, 10, TEXT("%.3f"), bitRateErr);
+	TextOut(hdc, 550, 470, num, 5);
 
 	ReleaseDC(hwndMainWin, hdc);
 }
