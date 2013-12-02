@@ -89,8 +89,12 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 			}
 			else if (retVal == TX_RET_EXCEEDED_RETRIES)
 			{
-				MessageBox(NULL, TEXT("Exceeded retransmission attempts."), TEXT("Exceeded Retries"), MB_OK);
-				//Do something with packet statistics
+				if(MessageBox(NULL, TEXT("Exceeded retransmission attempts."), TEXT("Exceeded Retries"), MB_RETRYCANCEL) == IDCANCEL)
+				{
+					WaitForSingleObject(hQueueMutex, INFINITE);
+						ClearOutputQueue();
+					ReleaseMutex(hQueueMutex);
+				}
 			}
 			break;
 		case WAIT_FAILED:
@@ -113,13 +117,12 @@ int TxProc()
 	size_t send_count = 0;
 
 	SendENQ();
-	/*signaled = WaitForSingleObject(hEvents[1], TIMEOUT);
+	signaled = WaitForSingleObject(hEvents[1], TIMEOUT);
 	if(signaled != WAIT_OBJECT_0)
 	{
-		sleep(TIMEOUT);*/
-
-	
-		
+		Sleep(TIMEOUT);
+		return TX_RET_SUCCESS;
+	}
 
 	while (send_count < SEND_LIMIT)
 	{
@@ -164,9 +167,6 @@ int TxProc()
 			
 			if (i == MAX_RETRIES)
 			{
-				WaitForSingleObject(hQueueMutex, INFINITE);
-				ClearOutputQueue();
-				ReleaseMutex(hQueueMutex);
 				return TX_RET_EXCEEDED_RETRIES;
 			}
 			break;
