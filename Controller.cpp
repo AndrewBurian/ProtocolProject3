@@ -49,7 +49,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 							CreateEvent(NULL, TRUE, FALSE, EVENT_END_PROGRAM)};
 	output_queue		= ((SHARED_DATA_POINTERS*)params)->p_quOutputQueue;
 	BOOL *bProgramDone	= ((SHARED_DATA_POINTERS*)params)->p_bProgramDone;
-	BOOL bTxStopped		= FALSE;
 
 	while (!*bProgramDone)
 	{
@@ -59,9 +58,6 @@ DWORD WINAPI ProtocolControlThread(LPVOID params)
 			SetEvent(hEvents[1]);		// if there is still output to send, make sure the event is set
 
 		signaled = WaitForMultipleObjects(3, hEvents, FALSE, INFINITE);
-
-		//if(bTxStopped)				// If there was something sending before, then output is still available
-		//	SetEvent(hEvents[1]);
 
 		switch(signaled)
 		{
@@ -113,6 +109,13 @@ int TxProc()
 	size_t send_count = 0;
 
 	SendENQ();
+	/*signaled = WaitForSingleObject(hEvents[1], TIMEOUT);
+	if(signaled != WAIT_OBJECT_0)
+	{
+		sleep(TIMEOUT);*/
+
+	
+		
 
 	while (!output_queue->empty() && send_count < SEND_LIMIT)
 	{
@@ -166,7 +169,7 @@ int TxProc()
 		}
 	}
 
-	// if we've gotten out of the loop, then there's no more data to send
+	// if we've gotten out of the loop, then there's no more data to send or the limit was reached
 	SendEOT();
 	Sleep(TIMEOUT);		// Give time for the other side to grab the line.
 	return TX_RET_SUCCESS;
