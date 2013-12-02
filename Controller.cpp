@@ -172,7 +172,6 @@ static int TxProc()
 			SendNext();
 			++send_count;
 			GUI_Sent();
-			Debug_out(TEXT("TX - pkt"), 8);
 			break;
 		case WAIT_OBJECT_0 + 2:
 		case WAIT_TIMEOUT:		// NAK or timed out; resend the packet max of 5 times
@@ -248,12 +247,10 @@ static int RxProc()
 		case WAIT_OBJECT_0 + 1:			// Good data received
 			GUI_Received();
 			SendACK();
-			Debug_out(TEXT("RX - ACK"), 8);
 			break;
 		case WAIT_OBJECT_0 + 2:			// Bad data received; send NAK
 			GUI_ReceivedBad();
 			SendNAK();
-			Debug_out(TEXT("RX - NAK"), 8);
 			break;
 		case WAIT_OBJECT_0 + 3:			// EOT, so return RX_RET_SUCCESS
 			return RX_RET_SUCCESS;
